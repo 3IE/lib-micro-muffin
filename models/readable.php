@@ -30,7 +30,7 @@ abstract class Readable extends Model
    * @param string $order
    * @return Model[]
    */
-  public static function all($order = NULL)
+  public static function all($order = null)
   {
     $class = strtolower(get_called_class());
     $proc  = self::$procstock_all != null ? self::$procstock_all : $class . 's';
@@ -83,15 +83,10 @@ abstract class Readable extends Model
     $proc  = self::$procstock_take != null ? self::$procstock_count : 'take' . $class . 's';
     $pdo   = PDOS::getInstance();
 
-    if (is_null($order))
-      $query = $pdo->prepare('SELECT * FROM ' . $proc . '(:start, :number)');
-    else
-    {
-      $query = $pdo->prepare('SELECT * FROM ' . $proc . '(:start, :number) ORDER BY :order');
-      $query->bindValue(':order', $order);
-    }
+    $query = $pdo->prepare('SELECT * FROM ' . $proc . '(:start, :number, :order)');
     $query->bindValue(':start', $offset);
     $query->bindValue(':number', $number);
+    $query->bindValue(':order', is_null($order) ? 'null' : $order);
     $query->execute();
 
     $datas   = $query->fetchAll();

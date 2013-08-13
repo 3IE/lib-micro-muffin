@@ -74,7 +74,7 @@ class Generator
     require_once(__DIR__ . '/MicroMuffin.php');
     require_once(__DIR__ . '/pdos.php');
     require_once(__DIR__ . '/epo.php');
-    require_once(__DIR__ . '/../'.CONFIG_DIR.'/config.php');
+    require_once(__DIR__ . '/../' . CONFIG_DIR . '/config.php');
 
     define('THIS_MODEL_DIR', '../' . MODEL_DIR);
     define('THIS_T_MODEL_DIR', '../' . TMODEL_DIR);
@@ -91,7 +91,6 @@ class Generator
     define('RO_CHMOD', 0444);
     define('W_CHMOD', 0660);
   }
-
 
   /**
    * @param $var
@@ -148,7 +147,7 @@ class Generator
     if (is_bool($value) || is_numeric($value))
       return $value;
     else if (is_string($value) && strtolower($value != 'null'))
-      return '"'.$value.'"';
+      return '"' . $value . '"';
     else
       return 'null';
   }
@@ -163,7 +162,7 @@ class Generator
   {
     $fieldCapitalize    = $field;
     $fieldCapitalize[0] = strtoupper($fieldCapitalize[0]);
-    $str                = TAB . 'protected' . ' $_' . $field . " = " . $this->formatValidDefaultValue($column_defaults[$field]).";\n\n";
+    $str                = TAB . 'protected' . ' $_' . $field . " = " . $this->formatValidDefaultValue($column_defaults[$field]) . ";\n\n";
 
     //Writing getter
     $str .= TAB . ($visible ? "public" : "private") . " function get" . $fieldCapitalize . "()\n" . TAB . "{\n";
@@ -526,14 +525,21 @@ class Generator
     $pdo->beginTransaction();
 
     $pdo->exec("
-    CREATE OR REPLACE FUNCTION $procedureName(numeric, numeric)
-    RETURNS SETOF $tableName AS
-    'SELECT * FROM $tableName OFFSET \$1 LIMIT \$2'
-    LANGUAGE sql VOLATILE
-    COST 100
-    ROWS 1000;
-    ALTER FUNCTION $procedureName(numeric, numeric)
-    OWNER TO " . DBUSER . ";
+    CREATE OR REPLACE FUNCTION $procedureName(start integer, \"number\" integer, order_ character varying)
+      RETURNS SETOF $tableName AS
+    \$BODY\$BEGIN
+      IF \$3 IS NOT NULL AND \$3 <> 'null' THEN
+        RETURN QUERY EXECUTE 'SELECT * FROM $tableName ORDER BY ' || $3 || ' OFFSET \$1 LIMIT \$2' USING \$1, \$2;
+      ELSE
+        RETURN QUERY EXECUTE 'SELECT * FROM $tableName OFFSET \$1 LIMIT \$2' USING \$1, \$2;
+      END IF;
+    END
+    \$BODY$
+      LANGUAGE plpgsql VOLATILE
+      COST 100
+      ROWS 1000;
+    ALTER FUNCTION $procedureName(integer, integer, character varying)
+      OWNER TO " . DBUSER . ";
     ");
 
     $pdo->commit();
@@ -799,7 +805,8 @@ class Generator
     try
     {
       $pdo = PDOS::getInstance();
-    } catch (\Exception $e)
+    }
+    catch (\Exception $e)
     {
       $this->writeLine("Error ! Connection to database failed.");
       exit(1);
@@ -895,7 +902,7 @@ class Generator
         $this->tableId[] = $field['table_name'];
       if (!is_null($field['sequence_name']))
       {
-        $array = explode(DBSCHEMA . '.', $field['sequence_name']);
+        $array                           = explode(DBSCHEMA . '.', $field['sequence_name']);
         $sequences[$field['table_name']] = $array[1];
       }
     }
