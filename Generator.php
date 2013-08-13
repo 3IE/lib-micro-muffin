@@ -450,7 +450,7 @@ class Generator
     if ($file)
     {
       fwrite($file, DISCLAIMER);
-      fwrite($file, 'class ' . $className . ' extends ' . $extendFrom . "\n{\n");
+      fwrite($file, 'abstract class ' . $className . ' extends ' . $extendFrom . "\n{\n");
 
       fwrite($file, TAB . "protected static \$table_name = '" . $tableName . "';\n");
       if ($this->haveSequence($originalTableName))
