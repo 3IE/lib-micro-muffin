@@ -70,10 +70,11 @@ class Generator
   {
     define('NOAUTOLOAD', true);
 
-    require_once 'config.php';
-    require_once '../lib/pdos.php';
-    require_once '../lib/epo.php';
-    require_once '../lib/config.php';
+    require_once(__DIR__ . '/config.php');
+    require_once(__DIR__ . '/MicroMuffin.php');
+    require_once(__DIR__ . '/pdos.php');
+    require_once(__DIR__ . '/epo.php');
+    require_once(__DIR__ . '/../'.CONFIG_DIR.'/config.php');
 
     define('THIS_MODEL_DIR', '../' . MODEL_DIR);
     define('THIS_T_MODEL_DIR', '../' . TMODEL_DIR);
@@ -142,9 +143,14 @@ class Generator
     return $table;
   }
 
-  private function isValidDefaultValue($value)
+  private function formatValidDefaultValue($value)
   {
-    return is_bool($value) || is_numeric($value);
+    if (is_bool($value) || is_numeric($value))
+      return $value;
+    else if (is_string($value) && strtolower($value != 'null'))
+      return '"'.$value.'"';
+    else
+      return 'null';
   }
 
   /**
@@ -157,7 +163,7 @@ class Generator
   {
     $fieldCapitalize    = $field;
     $fieldCapitalize[0] = strtoupper($fieldCapitalize[0]);
-    $str                = TAB . 'protected' . ' $_' . $field . " = " . (!$this->isValidDefaultValue($column_defaults[$field]) ? "null" : $column_defaults[$field]) . ";\n\n";
+    $str                = TAB . 'protected' . ' $_' . $field . " = " . $this->formatValidDefaultValue($column_defaults[$field]).";\n\n";
 
     //Writing getter
     $str .= TAB . ($visible ? "public" : "private") . " function get" . $fieldCapitalize . "()\n" . TAB . "{\n";
