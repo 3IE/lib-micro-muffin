@@ -666,7 +666,7 @@ class Generator
             $buffer .= TAB . "}\n\n";
 
             //Setter
-            $buffer .= TAB . "protected function set" . $nameUppered . "(\$" . $p['name'] . ")\n";
+            $buffer .= TAB . "public function set" . $nameUppered . "(\$" . $p['name'] . ")\n";
             $buffer .= TAB . "{\n";
             $buffer .= TAB . TAB . "\$this->" . $p['name'] . " = \$" . $p['name'] . ";\n";
             $buffer .= TAB . "}\n\n";
