@@ -22,6 +22,7 @@ define('LIBMODEL_DIR', BASE_DIR . LIB_DIR . '/models/');
 define('LIBFORM_DIR', BASE_DIR . LIB_DIR . '/form/');
 define('DICO_DIR', BASE_DIR . 'app/l10n/');
 define('LIBROUTER_DIR', BASE_DIR . LIB_DIR . '/router/');
+define('CONTENT_DIR', BASE_DIR . 'public/content/');
 
 if (!defined('NOAUTOLOAD') || !NOAUTOLOAD) {
   Autoloader::addPath(CONTROLLER_DIR);
