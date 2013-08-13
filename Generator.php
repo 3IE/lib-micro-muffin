@@ -142,6 +142,11 @@ class Generator
     return $table;
   }
 
+  private function isValidDefaultValue($value)
+  {
+    return is_bool($value) || is_numeric($value);
+  }
+
   /**
    * @param string $field
    * @param bool $visible
@@ -152,7 +157,7 @@ class Generator
   {
     $fieldCapitalize    = $field;
     $fieldCapitalize[0] = strtoupper($fieldCapitalize[0]);
-    $str                = TAB . 'protected' . ' $_' . $field . " = " . (is_null($column_defaults[$field]) ? "null" : $column_defaults[$field]) . ";\n\n";
+    $str                = TAB . 'protected' . ' $_' . $field . " = " . (!$this->isValidDefaultValue($column_defaults[$field]) ? "null" : $column_defaults[$field]) . ";\n\n";
 
     //Writing getter
     $str .= TAB . ($visible ? "public" : "private") . " function get" . $fieldCapitalize . "()\n" . TAB . "{\n";
