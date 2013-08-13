@@ -92,7 +92,8 @@ class MicroMuffin
     $this->controller->$action($this->route->getParameters());
 
     //View displaying
-    if ($this->controller->getRender() != "false")
+    $render = $this->controller->getRender();
+    if ($render != "false")
     {
       Internationalization::init();
       $twig_options = array('cache' => false, 'autoescape' => false, 'strict_variables' => true);
@@ -101,7 +102,7 @@ class MicroMuffin
       $twig   = new \Twig_Environment($loader, $twig_options);
       $twig->addFilter("tr", new \Twig_Filter_Function("\\Lib\\Internationalization::translate"));
 
-      $page = $twig->render($this->action . ".html.twig", $this->controller->getVariables());
+      $page = $twig->render(($render == "true" ? $this->action : $render) . ".html.twig", $this->controller->getVariables());
 
       //Base layout execution and displaying
       $layout = $this->controller->getRenderLayout();
