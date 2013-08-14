@@ -15,6 +15,14 @@ abstract class Model
   protected $_id = 0;
 
   /**
+   * @return string
+   */
+  public static function getTableName()
+  {
+    return static::$table_name;
+  }
+
+  /**
    * @return int
    */
   public function getId()
