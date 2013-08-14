@@ -28,7 +28,7 @@ abstract class Readable extends Model
    * Find all models in database
    *
    * @param string $order
-   * @return Model[]
+   * @return self[]
    */
   public static function all($order = null)
   {
@@ -40,6 +40,31 @@ abstract class Readable extends Model
       $query = $pdo->prepare('SELECT * FROM getall' . $proc . '()');
     else
       $query = $pdo->prepare('SELECT * FROM getall' . $proc . '() ORDER BY ' . $order);
+    $query->execute();
+
+    $datas = $query->fetchAll();
+
+    $outputs = array();
+    foreach ($datas as $d)
+    {
+      $object = new $class();
+      self::hydrate($object, $d);
+      $outputs[] = $object;
+    }
+    return $outputs;
+  }
+
+  /**
+   * @param string $where_clause
+   * @return self[]
+   */
+  public static function where($where_clause)
+  {
+    $class = strtolower(get_called_class());
+    $proc  = static::$procstock_all != null ? static::$procstock_all : 'getall' . $class . 's';
+    $pdo   = PDOS::getInstance();
+
+    $query = $pdo->prepare('SELECT * FROM ' . $proc . '() WHERE ' . $where_clause);
     $query->execute();
 
     $datas = $query->fetchAll();
