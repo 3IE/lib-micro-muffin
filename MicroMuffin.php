@@ -101,6 +101,7 @@ class MicroMuffin
       $loader = new \Twig_Loader_Filesystem('../' . VIEW_DIR . strtolower($this->route->getController()));
       $twig   = new \Twig_Environment($loader, $twig_options);
       $twig->addFilter("tr", new \Twig_Filter_Function("\\Lib\\Internationalization::translate"));
+      $twig->addFilter("url", new \Twig_Filter_Function("\\Lib\\Tools::sanitizeForUrl"));
 
       $page = $twig->render(($render == "true" ? $this->action : $render) . ".html.twig", $this->controller->getVariables());
 
@@ -111,6 +112,7 @@ class MicroMuffin
         $loader = new \Twig_Loader_Filesystem('../' . VIEW_DIR . 'base');
         $twig   = new \Twig_Environment($loader, $twig_options);
         $twig->addFilter("tr", new \Twig_Filter_Function("\\Lib\\Internationalization::translate"));
+        $twig->addFilter("url", new \Twig_Filter_Function("\\Lib\\Tools::sanitizeForUrl"));
 
         $base = new \BaseController();
         $base->$layout();

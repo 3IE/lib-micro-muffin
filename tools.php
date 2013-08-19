@@ -37,7 +37,7 @@ class Tools
    * @param string $sStr
    * @return string
    */
-  public function sanitizeForUrl($sStr)
+  public static function sanitizeForUrl($sStr)
   {
     $ISOTransChar = array("'"      => '-', ' "' => '-',
                           'áŕĺäâă' => 'a', 'ÁŔĹÄÂĂ' => 'A', 'éčëę' => 'e', 'ÉČËĘ' => 'E',
