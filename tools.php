@@ -9,7 +9,6 @@
 
 namespace Lib;
 
-
 class Tools
 {
   /**
@@ -69,5 +68,16 @@ class Tools
     $newStr = strtolower($newStr);
 
     return $newStr;
+  }
+
+  public static function randomStr($car)
+  {
+    $string = "";
+    $chaine = "abcdefghijklmnpqrstuvwxy0123456789";
+    srand((double)microtime() * 1000000);
+    for ($i = 0; $i < $car; $i++)
+      $string .= $chaine[rand() % strlen($chaine)];
+
+    return $string;
   }
 }
