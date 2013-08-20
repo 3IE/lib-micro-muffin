@@ -9,7 +9,6 @@
 
 namespace Lib\Form;
 
-
 class FormGenerator
 {
   /** @var string */
@@ -39,6 +38,9 @@ class FormGenerator
   /** @var string */
   private $fieldClass;
 
+  /** @var bool */
+  private $hasFileInput;
+
   /**
    * @param string $action
    * @param string $method
@@ -54,6 +56,7 @@ class FormGenerator
     $this->submitLabel  = 'Valider';
     $this->buttons      = array();
     $this->fieldClass   = null;
+    $this->hasFileInput = false;
   }
 
   public function setFieldClass($class)
@@ -180,6 +183,14 @@ class FormGenerator
     return $radio;
   }
 
+  public function addFileInput($name, $required = Field::FIELD_OPTIONAL)
+  {
+    $this->hasFileInput  = true;
+    $fileInput           = new FileInput($name, $required);
+    $this->fields[$name] = $fileInput;
+    return $fileInput;
+  }
+
   /**
    * @return string
    */
@@ -189,7 +200,7 @@ class FormGenerator
     $str            = '';
     $horizontal     = $this->isHorizontal ? ' class="form-horizontal" ' : null;
 
-    $str .= '<form action="' . $this->action . '" method="' . $this->method . '"' . $horizontal . '>';
+    $str .= '<form action="' . $this->action . '" method="' . $this->method . '"' . $horizontal . ' ' . ($this->hasFileInput ? 'enctype="multipart/form-data"' : '') . '>';
 
     if (!is_null($this->legend))
       $str .= '<fieldset><legend>' . $this->legend . '</legend>';
@@ -215,7 +226,6 @@ class FormGenerator
 
     if (!is_null($this->legend))
       $str .= '</fieldset>';
-
 
     $str .= '<div class="control-group"><div class="controls">';
     $str .= '<button type="submit" class="btn btn-primary">' . $this->submitLabel . '</button>';
