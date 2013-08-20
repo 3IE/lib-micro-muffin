@@ -244,7 +244,7 @@ class Generator
   COST 100
   ROWS 1000;
   ALTER function " . $procedureName . "(" . $columnType . ")
-  OWNER TO " . DBUSER . ";");
+  OWNER TO \"" . DBUSER . "\";");
     $pdo->commit();
 
     $this->writeLine(' ' . $procedureName . '() written in database');
@@ -543,7 +543,7 @@ class Generator
       COST 100
       ROWS 1000;
     ALTER FUNCTION $procedureName(integer, integer, character varying)
-      OWNER TO " . DBUSER . ";
+      OWNER TO \"" . DBUSER . "\";
     ");
 
     $pdo->commit();
