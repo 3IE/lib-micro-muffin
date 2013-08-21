@@ -20,11 +20,31 @@ class Field
   /** @var string */
   private $defaultValue;
 
+  /** @var bool */
+  private $hasSequence;
+
   public function __construct($name)
   {
     $this->name         = $name;
     $this->type         = null;
     $this->defaultValue = null;
+    $this->hasSequence  = false;
+  }
+
+  /**
+   * @param boolean $hasSequence
+   */
+  public function setHasSequence($hasSequence)
+  {
+    $this->hasSequence = $hasSequence;
+  }
+
+  /**
+   * @return boolean
+   */
+  public function getHasSequence()
+  {
+    return $this->hasSequence;
   }
 
   /**

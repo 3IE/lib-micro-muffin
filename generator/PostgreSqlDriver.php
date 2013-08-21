@@ -41,7 +41,7 @@ class PostgreSqlDriver extends Driver
       table_name");
     $query->execute();
 
-    $fields          = $query->fetchAll();
+    $fields = $query->fetchAll();
 
     /** @var Table[] $tables */
     $tables = array();
@@ -54,19 +54,17 @@ class PostgreSqlDriver extends Driver
         $tables[$f['table_name']] = new Table($f['table_name']);
       }
 
-      $table = &$tables[$f['table_name']];
-      if ($f['column_name'] != 'id')
-      {
-        $field = new Field($f['column_name']);
-        $field->setDefaultValue(is_null($f['sequence_name']) ? $f['column_default'] : null);
-        $table->addField($field);
-      }
+      $table = & $tables[$f['table_name']];
+      $field = new Field($f['column_name']);
+      $field->setDefaultValue(is_null($f['sequence_name']) ? $f['column_default'] : null);
 
       if (!is_null($f['sequence_name']))
       {
         $array = explode(DBSCHEMA . '.', $f['sequence_name']);
         $table->setSequenceName($array[1]);
+        $field->setHasSequence(true);
       }
+      $table->addField($field);
     }
 
     return $tables;
