@@ -17,11 +17,16 @@ class PostgreSqlDriver extends Driver
   {
     $schema = new AbstractSchema();
 
-    $schema->setTables($this->readTables());
+    $tables = $this->readTables();
+    $this->readPrimaryKeys($tables);
+    $schema->setTables($tables);
 
     $this->abstractSchema = $schema;
   }
 
+  /**
+   * @return Table[]
+   */
   private function readTables()
   {
     $pdo = PDOS::getInstance();
@@ -70,7 +75,43 @@ class PostgreSqlDriver extends Driver
     return $tables;
   }
 
-  private function readConstraints()
+  /**
+   * @param Table[] $tables
+   */
+  private function readPrimaryKeys(&$tables)
   {
+    $pdo = PDOS::getInstance();
+
+    $query = $pdo->prepare("
+    SELECT
+        tc.table_name,
+        ccu.column_name,
+        c.data_type
+    FROM
+        information_schema.table_constraints AS tc
+        INNER JOIN information_schema.constraint_column_usage AS ccu ON tc.constraint_name = ccu.constraint_name
+        INNER JOIN information_schema.columns AS c ON c.column_name = ccu.column_name AND c.table_name = tc.table_name
+    WHERE tc.constraint_type = 'PRIMARY KEY' AND tc.constraint_schema = '" . DBSCHEMA . "'");
+    $query->execute();
+
+    /** @var PrimaryKey[] $primaryKeys */
+    $primaryKeys = array();
+
+    /*
+     * There is one primary key by table, but it can contains several columns, each iteration of this loop is for a column
+     */
+    foreach ($query->fetchAll() as $pk)
+    {
+      if (!array_key_exists($pk['table_name'], $primaryKeys))
+        $primaryKeys[$pk['table_name']] = new PrimaryKey();
+      $object = & $primaryKeys[$pk['table_name']];
+      $object->addField($pk['column_name']);
+    }
+
+    foreach ($primaryKeys as $table => $pk)
+    {
+      if (array_key_exists($table, $tables))
+        $tables[$table]->setPrimaryKey($pk);
+    }
   }
 }

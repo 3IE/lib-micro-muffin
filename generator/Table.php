@@ -81,6 +81,16 @@ class Table
     return $this->fields;
   }
 
+  public function getField($name)
+  {
+    foreach ($this->fields as $field)
+    {
+      if ($field->getName() == $name)
+        return $field;
+    }
+    return null;
+  }
+
   /**
    * @param string $name
    */
