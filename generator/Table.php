@@ -20,11 +20,11 @@ class Table
   /** @var PrimaryKey */
   private $primaryKey;
 
-  /**
-   * All constraints - Primary Key excluded
-   * @var Constraint[]
-   */
-  private $constraints;
+  /** @var OneToMany[] */
+  private $oneToManyJoins;
+
+  /** @var ManyToOne[] */
+  private $manyToOneJoins;
 
   /** @var string */
   private $sequenceName;
@@ -37,8 +37,55 @@ class Table
     $this->name         = $name;
     $this->fields       = array();
     $this->primaryKey   = null;
-    $this->constraints  = array();
     $this->sequenceName = null;
+  }
+
+  /**
+   * @param ManyToOne $mto
+   */
+  public function addManyToOne(ManyToOne $mto)
+  {
+    $this->manyToOneJoins[] = $mto;
+  }
+
+  /**
+   * @param OneToMany $otm
+   */
+  public function addOneToMany(OneToMany $otm)
+  {
+    $this->oneToManyJoins[] = $otm;
+  }
+
+  /**
+   * @param \Lib\Generator\ManyToOne[] $manyToOneJoins
+   */
+  public function setManyToOneJoins($manyToOneJoins)
+  {
+    $this->manyToOneJoins = $manyToOneJoins;
+  }
+
+  /**
+   * @return \Lib\Generator\ManyToOne[]
+   */
+  public function getManyToOneJoins()
+  {
+    return $this->manyToOneJoins;
+  }
+
+  /**
+   * @param \Lib\Generator\OneToMany[] $oneToManyJoins
+   */
+  public function setOneToManyJoins($oneToManyJoins)
+  {
+    $this->oneToManyJoins = $oneToManyJoins;
+  }
+
+  /**
+   * @return \Lib\Generator\OneToMany[]
+   */
+  public function getOneToManyJoins()
+  {
+    return $this->oneToManyJoins;
   }
 
   /**
@@ -47,22 +94,6 @@ class Table
   public function addField(Field $field)
   {
     $this->fields[] = $field;
-  }
-
-  /**
-   * @param \Lib\Generator\Constraint[] $constraints
-   */
-  public function setConstraints($constraints)
-  {
-    $this->constraints = $constraints;
-  }
-
-  /**
-   * @return \Lib\Generator\Constraint[]
-   */
-  public function getConstraints()
-  {
-    return $this->constraints;
   }
 
   /**

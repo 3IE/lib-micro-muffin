@@ -19,6 +19,7 @@ class PostgreSqlDriver extends Driver
 
     $tables = $this->readTables();
     $this->readPrimaryKeys($tables);
+    $this->readForeignKeys($tables);
     $schema->setTables($tables);
 
     $this->abstractSchema = $schema;
@@ -112,6 +113,36 @@ class PostgreSqlDriver extends Driver
     {
       if (array_key_exists($table, $tables))
         $tables[$table]->setPrimaryKey($pk);
+    }
+  }
+
+  /**
+   * @param Table[] $tables
+   */
+  private function readForeignKeys(&$tables)
+  {
+    $pdo = PDOS::getInstance();
+
+    $query = $pdo->prepare("
+    SELECT
+        tc.table_name,
+        kcu.column_name,
+        ccu.table_name AS foreign_table_name,
+        ccu.column_name AS foreign_column_name,
+        c.data_type AS foreign_column_type
+    FROM
+        information_schema.table_constraints AS tc
+        JOIN information_schema.key_column_usage AS kcu ON tc.constraint_name = kcu.constraint_name
+        JOIN information_schema.constraint_column_usage AS ccu ON ccu.constraint_name = tc.constraint_name
+        JOIN information_schema.columns AS c ON c.table_name = ccu.table_name AND c.column_name = ccu.column_name
+    WHERE constraint_type = 'FOREIGN KEY';");
+
+    $query->execute();
+
+    foreach ($query->fetchAll() as $fk)
+    {
+      $tables[$fk['table_name']]->addManyToOne(new ManyToOne($fk['column_name'], $fk['foreign_column_name'], $fk['foreign_table_name']));
+      $tables[$fk['foreign_table_name']]->addOneToMany(new OneToMany($fk['foreign_column_name'], $fk['column_name'], $fk['table_name']));
     }
   }
 }
