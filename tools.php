@@ -70,6 +70,10 @@ class Tools
     return $newStr;
   }
 
+  /**
+   * @param int $car
+   * @return string
+   */
   public static function randomStr($car)
   {
     $string = "";
@@ -79,5 +83,16 @@ class Tools
       $string .= $chaine[rand() % strlen($chaine)];
 
     return $string;
+  }
+
+  /**
+   * @param string $table
+   * @return string
+   */
+  public static function removeSFromTableName($table)
+  {
+    if ($table[strlen($table) - 1] == 's')
+      $table = substr($table, 0, -1);
+    return $table;
   }
 }

@@ -9,6 +9,8 @@
 
 namespace Lib\Generator;
 
+use Lib\Tools;
+
 class Table
 {
   /** @var string */
@@ -38,6 +40,22 @@ class Table
     $this->fields       = array();
     $this->primaryKey   = null;
     $this->sequenceName = null;
+  }
+
+  /**
+   * @return string
+   */
+  public function getT_ClassName()
+  {
+    return 'T_' . Tools::capitalize(Tools::removeSFromTableName($this->name));
+  }
+
+  /**
+   * @return string
+   */
+  public function getClassName()
+  {
+    return Tools::capitalize($this->name);
   }
 
   /**

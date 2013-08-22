@@ -1,0 +1,23 @@
+<?php
+abstract class {{ className }} extends \Lib\Models\Deletable
+{
+  protected static $table_name = '{{ tableName }}';
+  protected static $sequence_name = '{{ sequenceName }}';
+  protected static $primary_keys = array({{ primaryKey }});
+
+{% for f in fields %}
+  protected $_{{ f.getName }} = {{ f.defaultValueToString }};
+
+  public function get{{ f.getCapName }}()
+  {
+    return $this->_{{ f.getName }};
+  }
+
+  public function set{{ f.getCapName }}(${{ f.getName }})
+  {
+    $this->_objectEdited();
+    $this->_{{ f.getName }} = ${{ f.getName }};
+  }
+
+{% endfor %}
+}

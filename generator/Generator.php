@@ -18,7 +18,6 @@ class Generator
 
     var_dump($schema);
 
-    $schema->writeModels();
-    $schema->writeStoredProcedures();
+    $schema->writeFiles();
   }
 }

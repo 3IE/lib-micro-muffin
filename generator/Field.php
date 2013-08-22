@@ -9,6 +9,8 @@
 
 namespace Lib\Generator;
 
+use Lib\Tools;
+
 class Field
 {
   /** @var string */
@@ -29,6 +31,27 @@ class Field
     $this->type         = null;
     $this->defaultValue = null;
     $this->hasSequence  = false;
+  }
+
+  /**
+   * @return string
+   */
+  public function getCapName()
+  {
+    return Tools::capitalize($this->name);
+  }
+
+  /**
+   * @return string
+   */
+  public function defaultValuetoString()
+  {
+    if (is_null($this->defaultValue))
+      return 'null';
+    else if (is_string($this->defaultValue))
+      return "'$this->defaultValue'";
+    else
+      return $this->defaultValue;
   }
 
   /**
