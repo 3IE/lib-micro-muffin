@@ -68,8 +68,9 @@ class Generator
 
   private function init()
   {
-    define('NOAUTOLOAD', true);
+    //define('NOAUTOLOAD', true);
 
+    require_once(__DIR__ . '/autoloader.php');
     require_once(__DIR__ . '/config.php');
     require_once(__DIR__ . '/MicroMuffin.php');
     require_once(__DIR__ . '/pdos.php');
