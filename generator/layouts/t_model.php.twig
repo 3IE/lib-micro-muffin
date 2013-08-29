@@ -20,4 +20,40 @@ abstract class {{ className }} extends \Lib\Models\Deletable
   }
 
 {% endfor %}
+
+{% for mto in manyToOne %}
+  protected $_{{ mto.getField }} = null;
+
+  private function get{{ mto.getField | capitalize }}()
+  {
+    return $this->_{{ mto.getField }};
+  }
+
+  private function set{{ mto.getField | capitalize }}(${{ mto.getField }})
+  {
+    $this->_objectEdited();
+    $this->_{{ mto.getField }} = ${{ mto.getField }};
+  }
+
+  {% set className = mto.getTargetTable | capitalize | removeS %}
+  {% set attrName = mto.getTargetTable | removeS %}
+  /** @var {{ className }} */
+  protected ${{ attrName }} = null;
+
+  /** @return {{ className }} */
+  public function get{{ className }}()
+  {
+    if (is_null($this->{{ attrName }}))
+      $this->{{ attrName }} = {{ className }}::find($this->_{{ mto.getField }});
+     return $this->{{ attrName }};
+  }
+
+  /** @param {{ className }} ${{ attrName }} */
+  public function set{{ className }}(${{ attrName }})
+  {
+    $this->{{ attrName }} = ${{ attrName }};
+    $this->_{{ mto.getField }} = ${{ attrName}}->get{{ mto.getTargetField | capitalize }}();
+    $this->_objectEdited();
+  }
+{% endfor %}
 }

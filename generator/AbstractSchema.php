@@ -47,6 +47,7 @@ class AbstractSchema
 
     $loader     = new \Twig_Loader_Filesystem(__DIR__ . '/layouts');
     $this->twig = new \Twig_Environment($loader, $twig_options);
+    $this->twig->addFilter("removeS", new \Twig_Filter_Function("\\Lib\\Tools::removeSFromTableName"));
   }
 
   public function writeFiles()
@@ -77,8 +78,8 @@ class AbstractSchema
   {
     $variables = array();
 
-    $variables['className'] = $table->getT_ClassName();
-    $variables['tableName'] = $table->getName();
+    $variables['className']    = $table->getT_ClassName();
+    $variables['tableName']    = $table->getName();
     $variables['sequenceName'] = $table->getSequenceName();
 
     $str = '';
@@ -86,11 +87,37 @@ class AbstractSchema
       $str .= "'$field', ";
     $variables['primaryKey'] = substr($str, 0, -2);
 
-    $variables['fields'] = $table->getFields();
+    $variables['fields']    = $this->removeJoinsFields($table->getFields(), $table->getManyToOneJoins());
     $variables['manyToOne'] = $table->getManyToOneJoins();
     $variables['oneToMany'] = $table->getOneToManyJoins();
 
     return $this->twig->render('t_model.php.twig', $variables);
+  }
+
+  /**
+   * @param Field[] $fields
+   * @param ManyToOne[] $mto
+   * @return Field[]
+   */
+  private function removeJoinsFields($fields, $mto)
+  {
+    if (count($mto) > 0)
+    {
+      $output = array();
+      foreach ($fields as $f)
+      {
+        $join = false;
+        $name = $f->getName();
+        foreach ($mto as $m)
+          if ($m->getField() == $name)
+            $join = true;
+        if (!$join)
+          $output[] = $f;
+      }
+      return $output;
+    }
+    else
+      return $fields;
   }
 
   private function writeStoredProcedures()

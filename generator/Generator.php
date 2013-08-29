@@ -16,7 +16,7 @@ class Generator
     $driver = new PostgreSqlDriver();
     $schema = $driver->getAbstractSchema();
 
-    var_dump($schema);
+    //r($schema);
 
     $schema->writeFiles();
   }
