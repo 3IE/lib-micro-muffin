@@ -35,8 +35,8 @@ abstract class {{ className }} extends \Lib\Models\Deletable
     $this->_{{ mto.getField }} = ${{ mto.getField }};
   }
 
-  {% set className = mto.getTargetTable | capitalize | removeS %}
-  {% set attrName = mto.getTargetTable | removeS %}
+{% set className = mto.getTargetTable | capitalize | removeS %}
+{% set attrName = mto.getTargetTable | removeS %}
   /** @var {{ className }} */
   protected ${{ attrName }} = null;
 

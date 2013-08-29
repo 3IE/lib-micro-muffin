@@ -91,6 +91,24 @@ class AbstractSchema
     $variables['manyToOne'] = $table->getManyToOneJoins();
     $variables['oneToMany'] = $table->getOneToManyJoins();
 
+    //Find
+    $find_params      = '';
+    $find_proto       = '';
+    $find_placeholder = '';
+    $find_checkNull   = '';
+
+    /** @var $f PrimaryKey */
+    foreach ($table->getPrimaryKey()->getFields() as $f)
+    {
+      $find_params      .= " * @param \$" . $f->getName() . "\n";
+      $find_proto       .= "\$" . $f->getName() . ", ";
+      $find_placeholder .= ":" . $f->getName() . ", ";
+      $find_checkNull   .= '!is_null($result[\'' . $f->getName() . '\']) && ';
+    }
+    $variables['find_proto']       = substr($find_proto, 0, -2);
+    $variables['find_placeholder'] = substr($find_placeholder, 0, -2);
+    $variables['find_checkNull']   = substr($find_checkNull, 0, -4);
+
     return $this->twig->render('t_model.php.twig', $variables);
   }
 
