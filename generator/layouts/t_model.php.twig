@@ -115,4 +115,22 @@ abstract class {{ tClassName }} extends \Lib\Models\Deletable
 
       $pdo->commit();
   }
+
+  /**
+   * @param string $order
+   * @return {{ finalClassName }}[]
+   */
+  public static function all($order = NULL)
+  {
+    return parent::all($order);
+  }
+
+  /**
+   * @param string $where_clause
+   * @return {{ finalClassName }}[]
+   */
+  public static function where($where_clause)
+  {
+    return parent::where($where_clause);
+  }
 }
