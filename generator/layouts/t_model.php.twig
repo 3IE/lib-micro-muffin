@@ -86,4 +86,33 @@ abstract class {{ tClassName }} extends \Lib\Models\Deletable
     else
       return null;
   }
+
+  protected function update()
+  {
+    $sql        = 'UPDATE {{ tableName }} SET ';
+    $set        = '';
+    $where      = '';
+    $attributes = $this->getAttributes(new \ReflectionClass($this));
+
+    foreach ($attributes as $k => $v)
+      if (!in_array($k, self::$primary_keys))
+        $set .= $k . ' = :'. $k . ', ';
+
+    foreach (self::$primary_keys as $pk)
+      $where .= $pk . ' = :' . $pk . ' AND ';
+
+      $where  = substr($where, 0, -5);
+      $set    = substr($set, 0, -2);
+      $sql   .= $set . ' WHERE ' . $where;
+
+      $pdo = \Lib\PDOS::getInstance();
+      $pdo->begintransaction();
+
+      $query = $pdo->prepare($sql);
+      foreach($attributes as $k => $v)
+        $query->bindValue(':' . $k, $v);
+      $query->execute();
+
+      $pdo->commit();
+  }
 }

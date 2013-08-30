@@ -147,8 +147,4 @@ class AbstractSchema
     else
       return $fields;
   }
-
-  private function writeStoredProcedures()
-  {
-  }
 }
