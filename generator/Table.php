@@ -55,7 +55,7 @@ class Table
    */
   public function getClassName()
   {
-    return Tools::capitalize($this->name);
+    return Tools::capitalize(Tools::removeSFromTableName($this->name));
   }
 
   /**

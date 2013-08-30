@@ -78,9 +78,10 @@ class AbstractSchema
   {
     $variables = array();
 
-    $variables['className']    = $table->getT_ClassName();
-    $variables['tableName']    = $table->getName();
-    $variables['sequenceName'] = $table->getSequenceName();
+    $variables['tClassName']     = $table->getT_ClassName();
+    $variables['finalClassName'] = $table->getClassName();
+    $variables['tableName']      = $table->getName();
+    $variables['sequenceName']   = $table->getSequenceName();
 
     $str = '';
     foreach ($table->getPrimaryKey()->getFields() as $field)
@@ -96,18 +97,26 @@ class AbstractSchema
     $find_proto       = '';
     $find_placeholder = '';
     $find_checkNull   = '';
+    $find_result      = '$result';
 
     /** @var $f PrimaryKey */
     foreach ($table->getPrimaryKey()->getFields() as $f)
     {
-      $find_params      .= " * @param \$" . $f->getName() . "\n";
-      $find_proto       .= "\$" . $f->getName() . ", ";
-      $find_placeholder .= ":" . $f->getName() . ", ";
-      $find_checkNull   .= '!is_null($result[\'' . $f->getName() . '\']) && ';
+      $find_params .= " * @param \$" . $f . "\n";
+      $find_proto .= "\$" . $f . ", ";
+      $find_placeholder .= ":" . $f . ", ";
+      $find_checkNull .= '!is_null(' . $find_result . '[\'' . $f . '\']) && ';
     }
+    $variables['find_params']      = substr($find_params, 0, -1);;
     $variables['find_proto']       = substr($find_proto, 0, -2);
     $variables['find_placeholder'] = substr($find_placeholder, 0, -2);
     $variables['find_checkNull']   = substr($find_checkNull, 0, -4);
+    $variables['find_result']      = $find_result;
+
+    $variables['pkFields'] = $table->getPrimaryKey()->getFields();
+
+    //FIXME
+    $variables['findProcedureName'] = 'FIXME';
 
     return $this->twig->render('t_model.php.twig', $variables);
   }

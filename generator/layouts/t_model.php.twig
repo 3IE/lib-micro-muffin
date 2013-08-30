@@ -1,5 +1,5 @@
 <?php
-abstract class {{ className }} extends \Lib\Models\Deletable
+abstract class {{ tClassName }} extends \Lib\Models\Deletable
 {
   protected static $table_name = '{{ tableName }}';
   protected static $sequence_name = '{{ sequenceName }}';
@@ -56,4 +56,34 @@ abstract class {{ className }} extends \Lib\Models\Deletable
     $this->_objectEdited();
   }
 {% endfor %}
+
+  /**
+  {{ find_params }}
+   * @return {{ finalClassName }}
+   */
+  public static function find({{ find_proto }})
+  {
+    $pdo = \Lib\PDOS::getInstance();
+    $query = $pdo->prepare('SELECT * FROM {{ findProcedureName }}({{ find_placeholder }})');
+
+    //Parameters binding
+{% for f in pkFields %}
+    if (is_string(${{ f }}))
+      $query->bindValue(':{{ f }}', ${{ f }}, PDO::PARAM_STR);
+    else
+      $query->bindValue(':{{ f }}', ${{ f }});
+{% endfor %}
+
+    $query->execute();
+    {{ find_result }} = $query->fetch();
+
+    if (!is_null({{ find_result }}) && {{ find_checkNull }})
+    {
+      $output_object = new {{ finalClassName }}();
+      self::hydrate($output_object, {{ find_result }});
+      return $output_object;
+    }
+    else
+      return null;
+  }
 }
