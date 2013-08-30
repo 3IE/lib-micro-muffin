@@ -16,6 +16,8 @@ abstract class Driver
 
   protected abstract function readDatabaseSchema();
 
+  public abstract function writeFindProcedure(Table $table);
+
   /**
    * @return AbstractSchema
    */

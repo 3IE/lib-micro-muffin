@@ -19,10 +19,14 @@ class AbstractSchema
   /** @var \Twig_Environment */
   private $twig;
 
-  public function __construct()
+  /** @var Driver */
+  private $driver;
+
+  public function __construct(Driver $driver)
   {
     $this->tables = array();
     $this->twig   = null;
+    $this->driver = $driver;
   }
 
   /**
@@ -85,7 +89,7 @@ class AbstractSchema
 
     $str = '';
     foreach ($table->getPrimaryKey()->getFields() as $field)
-      $str .= "'$field', ";
+      $str .= '\'' . $field->getName() . '\', ';
     $variables['primaryKey'] = substr($str, 0, -2);
 
     $variables['fields']    = $this->removeJoinsFields($table->getFields(), $table->getManyToOneJoins());
@@ -99,24 +103,21 @@ class AbstractSchema
     $find_checkNull   = '';
     $find_result      = '$result';
 
-    /** @var $f PrimaryKey */
     foreach ($table->getPrimaryKey()->getFields() as $f)
     {
-      $find_params .= " * @param \$" . $f . "\n";
-      $find_proto .= "\$" . $f . ", ";
-      $find_placeholder .= ":" . $f . ", ";
-      $find_checkNull .= '!is_null(' . $find_result . '[\'' . $f . '\']) && ';
+      $find_params .= " * @param \$" . $f->getName() . "\n";
+      $find_proto .= "\$" . $f->getName() . ", ";
+      $find_placeholder .= ":" . $f->getName() . ", ";
+      $find_checkNull .= '!is_null(' . $find_result . '[\'' . $f->getName() . '\']) && ';
     }
-    $variables['find_params']      = substr($find_params, 0, -1);;
-    $variables['find_proto']       = substr($find_proto, 0, -2);
-    $variables['find_placeholder'] = substr($find_placeholder, 0, -2);
-    $variables['find_checkNull']   = substr($find_checkNull, 0, -4);
-    $variables['find_result']      = $find_result;
 
-    $variables['pkFields'] = $table->getPrimaryKey()->getFields();
-
-    //FIXME
-    $variables['findProcedureName'] = 'FIXME';
+    $variables['find_params']       = substr($find_params, 0, -1);
+    $variables['find_proto']        = substr($find_proto, 0, -2);
+    $variables['find_placeholder']  = substr($find_placeholder, 0, -2);
+    $variables['find_checkNull']    = substr($find_checkNull, 0, -4);
+    $variables['find_result']       = $find_result;
+    $variables['pkFields']          = $table->getPrimaryKey()->getFields();
+    $variables['findProcedureName'] = $this->driver->writeFindProcedure($table);
 
     return $this->twig->render('t_model.php.twig', $variables);
   }

@@ -15,7 +15,7 @@ class PostgreSqlDriver extends Driver
 {
   protected function readDatabaseSchema()
   {
-    $schema = new AbstractSchema();
+    $schema = new AbstractSchema($this);
 
     $tables = $this->readTables();
     $this->readPrimaryKeys($tables);
@@ -105,8 +105,12 @@ class PostgreSqlDriver extends Driver
     {
       if (!array_key_exists($pk['table_name'], $primaryKeys))
         $primaryKeys[$pk['table_name']] = new PrimaryKey();
+
       $object = & $primaryKeys[$pk['table_name']];
-      $object->addField($pk['column_name']);
+
+      $field  = new Field($pk['column_name']);
+      $field->setType($pk['data_type']);
+      $object->addField($field);
     }
 
     foreach ($primaryKeys as $table => $pk)
@@ -144,5 +148,44 @@ class PostgreSqlDriver extends Driver
       $tables[$fk['table_name']]->addManyToOne(new ManyToOne($fk['column_name'], $fk['foreign_column_name'], $fk['foreign_table_name']));
       $tables[$fk['foreign_table_name']]->addOneToMany(new OneToMany($fk['foreign_column_name'], $fk['column_name'], $fk['table_name']));
     }
+  }
+
+  /**
+   * @param Table $table
+   * @return string Name of the stored procedure
+   */
+  public function writeFindProcedure(Table $table)
+  {
+    $procedureName = 'find' . $table->getName();
+    $alias = $table->getName()[0];
+    $pdo   = PDOS::getInstance();
+
+    $proto     = '';
+    $where     = '';
+    $signature = '';
+    $count     = 1;
+    foreach ($table->getPrimaryKey()->getFields() as $field)
+    {
+      $proto .= $field->getName() . ' ' . $field->getType() . ', ';
+      $where .= $alias . "." . $field->getName() . ' = $' . $count++ . ' AND ';
+      $signature .= $field->getType() . ', ';
+    }
+    $proto     = substr($proto, 0, -2);
+    $where     = substr($where, 0, -5);
+    $signature = substr($signature, 0, -2);
+
+    $pdo->beginTransaction();
+
+    $pdo->exec("CREATE OR REPLACE function " . $procedureName . "(" . $proto . ")
+    RETURNS " . $table->getName() . " AS
+    'SELECT * FROM " . $table->getName() . " " . $alias . " WHERE " . $where . "'
+    LANGUAGE sql VOLATILE
+    COST 100;
+    ALTER function " . $procedureName . "(" . $signature . ")
+    OWNER TO \"" . DBUSER . "\";");
+
+    $pdo->commit();
+
+    return $procedureName;
   }
 }

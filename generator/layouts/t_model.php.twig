@@ -68,10 +68,10 @@ abstract class {{ tClassName }} extends \Lib\Models\Deletable
 
     //Parameters binding
 {% for f in pkFields %}
-    if (is_string(${{ f }}))
-      $query->bindValue(':{{ f }}', ${{ f }}, PDO::PARAM_STR);
+    if (is_string(${{ f.getName }}))
+      $query->bindValue(':{{ f.getName }}', ${{ f.getName }}, PDO::PARAM_STR);
     else
-      $query->bindValue(':{{ f }}', ${{ f }});
+      $query->bindValue(':{{ f.getName }}', ${{ f.getName }});
 {% endfor %}
 
     $query->execute();

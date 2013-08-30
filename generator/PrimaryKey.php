@@ -11,11 +11,11 @@ namespace Lib\Generator;
 
 class PrimaryKey extends Constraint
 {
-  /** @var array */
+  /** @var Field[] */
   private $fields;
 
   /**
-   * @param string $fields
+   * @param Field[] $fields
    */
   public function setFields($fields)
   {
@@ -23,7 +23,7 @@ class PrimaryKey extends Constraint
   }
 
   /**
-   * @return array
+   * @return Field[]
    */
   public function getFields()
   {
@@ -31,9 +31,9 @@ class PrimaryKey extends Constraint
   }
 
   /**
-   * @param string $field
+   * @param Field $field
    */
-  public function addField($field)
+  public function addField(Field $field)
   {
     $this->fields[] = $field;
   }
