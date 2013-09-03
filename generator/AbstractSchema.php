@@ -94,7 +94,29 @@ class AbstractSchema
 
     $variables['fields']    = $this->removeJoinsFields($table->getFields(), $table->getManyToOneJoins());
     $variables['manyToOne'] = $table->getManyToOneJoins();
-    $variables['oneToMany'] = $table->getOneToManyJoins();
+
+    $otm = $table->getOneToManyJoins();
+    if (!is_null($otm))
+    {
+      foreach ($table->getOneToManyJoins() as $o)
+      {
+        $cleanName = $o->getTargetField();
+        if (substr($cleanName, strlen($cleanName) - 3) == '_id')
+          $cleanName = substr($cleanName, 0, -3);
+        else if (substr($cleanName, strlen($cleanName) - 2 == 'Id'))
+          $cleanName = substr($cleanName, 0, -2);
+        $cleanName = strtolower($cleanName);
+
+        $o->setCleanField($cleanName);
+        $procedureName = $this->driver->writeOneToManyProcedure($o->getTargetTable(), $o->getTargetField(), $cleanName,
+          $table->getName(), $table->getField($o->getField())->getType());
+        $o->setProcedureName($procedureName);
+      }
+    }
+    $variables['oneToMany'] = is_null($otm) ? array() : $table->getOneToManyJoins();
+
+    //r($table->getOneToManyJoins());
+    //die();
 
     //Find
     $find_params      = '';

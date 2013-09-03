@@ -18,6 +18,8 @@ abstract class Driver
 
   public abstract function writeFindProcedure(Table $table);
 
+  public abstract function writeOneToManyProcedure($foreignTable, $foreignColumn, $foreignColumnClean, $tableName, $columnType);
+
   /**
    * @return AbstractSchema
    */

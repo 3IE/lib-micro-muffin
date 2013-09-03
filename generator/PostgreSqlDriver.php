@@ -10,6 +10,7 @@
 namespace Lib\Generator;
 
 use Lib\PDOS;
+use Lib\Tools;
 
 class PostgreSqlDriver extends Driver
 {
@@ -38,6 +39,7 @@ class PostgreSqlDriver extends Driver
       table_name,
       column_name,
       column_default,
+      data_type,
       pg_get_serial_sequence(table_name, column_name) AS sequence_name
     FROM
       information_schema.columns
@@ -63,6 +65,7 @@ class PostgreSqlDriver extends Driver
       $table = & $tables[$f['table_name']];
       $field = new Field($f['column_name']);
       $field->setDefaultValue(is_null($f['sequence_name']) ? $f['column_default'] : null);
+      $field->setType($f['data_type']);
 
       if (!is_null($f['sequence_name']))
       {
@@ -108,7 +111,7 @@ class PostgreSqlDriver extends Driver
 
       $object = & $primaryKeys[$pk['table_name']];
 
-      $field  = new Field($pk['column_name']);
+      $field = new Field($pk['column_name']);
       $field->setType($pk['data_type']);
       $object->addField($field);
     }
@@ -157,8 +160,8 @@ class PostgreSqlDriver extends Driver
   public function writeFindProcedure(Table $table)
   {
     $procedureName = 'find' . $table->getName();
-    $alias = $table->getName()[0];
-    $pdo   = PDOS::getInstance();
+    $alias         = $table->getName()[0];
+    $pdo           = PDOS::getInstance();
 
     $proto     = '';
     $where     = '';
@@ -185,6 +188,38 @@ class PostgreSqlDriver extends Driver
     OWNER TO \"" . DBUSER . "\";");
 
     $pdo->commit();
+
+    return $procedureName;
+  }
+
+  /**
+   * WARNING ! Foreign denomination is inverted compared with constraints query result
+   *
+   * @param string $foreignTable
+   * @param string $foreignColumn
+   * @param string $foreignColumnClean
+   * @param string $tableName
+   * @param string $columnType
+   * @return string
+   */
+  public function writeOneToManyProcedure($foreignTable, $foreignColumn, $foreignColumnClean, $tableName, $columnType)
+  {
+    $procedureName = strtolower('otm_' . $foreignTable . 'from' . Tools::removeSFromTableName($tableName) . '_' . $foreignColumnClean);
+    $pdo           = PDOS::getInstance();
+
+    $pdo->beginTransaction();
+    $pdo->exec("
+    CREATE OR REPLACE function " . $procedureName . "(foreign_column " . $columnType . ")
+    RETURNS SETOF " . $foreignTable . " AS
+    'SELECT * FROM " . $foreignTable . " WHERE " . $foreignColumn . " = \$1'
+    LANGUAGE sql VOLATILE
+    COST 100
+    ROWS 1000;
+    ALTER function " . $procedureName . "(" . $columnType . ")
+    OWNER TO \"" . DBUSER . "\";");
+    $pdo->commit();
+
+    //$this->writeLine(' ' . $procedureName . '() written in database');
 
     return $procedureName;
   }

@@ -57,6 +57,41 @@ abstract class {{ tClassName }} extends \Lib\Models\Deletable
   }
 {% endfor %}
 
+{% for otm in oneToMany %}
+{% set className = otm.getTargetTable | capitalize | removeS %}
+{% set attribute = otm.getTargetTable ~ 'From' ~ (otm.getCleanField | capitalize) %}
+  /** @var {{ className }}[] */
+  protected ${{ attribute }} = null;
+
+  /**
+   * @param string $order
+   * @return {{ className }}[]
+   */
+  public function get{{ attribute | capitalize }}($order = null)
+  {
+    if (is_null($this->{{ attribute }}))
+    {
+      $pdo = \Lib\PDOS::getInstance();
+      if (!is_null($order))
+        $query = $pdo->prepare('SELECT * FROM {{ otm.getProcedureName }}(' . $this->_{{ otm.getField }} . ') ORDER BY ' . $order);
+      else
+        $query = $pdo->prepare('SELECT * FROM {{ otm.getProcedureName }}(' . $this->_{{ otm.getField }} . ')');
+      $query->execute();
+
+      $results  = $query->fetchAll();
+      $objs     = array();
+      foreach ($results as $r)
+      {
+        $obj = new {{ className }}();
+        self::hydrate($obj, $r);
+        $objs[] = $obj;
+      }
+      $this->{{ attribute }} = $objs;
+    }
+    return $this->{{ attribute }};
+  }
+{% endfor %}
+
   /**
   {{ find_params }}
    * @return {{ finalClassName }}

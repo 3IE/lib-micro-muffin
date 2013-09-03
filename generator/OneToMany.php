@@ -20,6 +20,12 @@ class OneToMany
   /** @var string */
   private $targetTable;
 
+  /** @var string */
+  private $procedureName;
+
+  /** @var string */
+  private $cleanField;
+
   /**
    * @param string $field
    * @param string $targetField
@@ -27,9 +33,43 @@ class OneToMany
    */
   function __construct($field, $targetField, $targetTable)
   {
-    $this->field       = $field;
-    $this->targetField = $targetField;
-    $this->targetTable = $targetTable;
+    $this->field         = $field;
+    $this->targetField   = $targetField;
+    $this->procedureName = null;
+    $this->cleanField    = null;
+    $this->targetTable   = $targetTable;
+  }
+
+  /**
+   * @param string $cleanField
+   */
+  public function setCleanField($cleanField)
+  {
+    $this->cleanField = $cleanField;
+  }
+
+  /**
+   * @return string
+   */
+  public function getCleanField()
+  {
+    return $this->cleanField;
+  }
+
+  /**
+   * @param string $procedureName
+   */
+  public function setProcedureName($procedureName)
+  {
+    $this->procedureName = $procedureName;
+  }
+
+  /**
+   * @return string
+   */
+  public function getProcedureName()
+  {
+    return $this->procedureName;
   }
 
   /**
