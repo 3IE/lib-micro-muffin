@@ -161,10 +161,17 @@ abstract class Writable extends Readable
         $object = $objects[$i];
         foreach ($attrGetter as $attr => $getter)
         {
-          $property = $reflection->getProperty($attr);
-          $property->setAccessible(true);
-          $queryFull->bindValue(':' . $attr . '_' . $k, $property->getValue($object));//$object->$getter());
-          $property->setAccessible(false);
+          $method = $reflection->getMethod($getter);
+          if (!$method->isPrivate())
+          {
+            $property = $reflection->getProperty($attr);
+            $property->setAccessible(true);
+            $val = $property->getValue($object);
+            $property->setAccessible(false);
+          }
+          else
+            $val = $object->$getter();
+          $queryFull->bindValue(':' . $attr . '_' . $k, $val); //$object->$getter());
         }
         $i++;
       }
@@ -177,10 +184,17 @@ abstract class Writable extends Readable
         $object = $objects[$i];
         foreach ($attrGetter as $attr => $getter)
         {
-          $property = $reflection->getProperty($attr);
-          $property->setAccessible(true);
-          $queryPartial->bindValue(':' . $attr . '_' . $k, $property->getValue($object));//$object->$getter());
-          $property->setAccessible(false);
+          $method = $reflection->getMethod($getter);
+          if (!$method->isPrivate())
+          {
+            $property = $reflection->getProperty($attr);
+            $property->setAccessible(true);
+            $val = $property->getValue($object);
+            $property->setAccessible(false);
+          }
+          else
+            $val = $object->$getter();
+          $queryPartial->bindValue(':' . $attr . '_' . $k, $val); //$object->$getter());
         }
         $i++;
       }
