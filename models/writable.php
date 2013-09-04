@@ -161,10 +161,10 @@ abstract class Writable extends Readable
         $object = $objects[$i];
         foreach ($attrGetter as $attr => $getter)
         {
-          $property = $reflection->getProperty($getter);
-          $property->setAccessible(true);
+          $method = $reflection->getMethod($getter);
+          $method->setAccessible(true);
           $queryFull->bindValue(':' . $attr . '_' . $k, $object->$getter());
-          $property->setAccessible(false);
+          $method->setAccessible(false);
         }
         $i++;
       }
@@ -177,10 +177,10 @@ abstract class Writable extends Readable
         $object = $objects[$i];
         foreach ($attrGetter as $attr => $getter)
         {
-          $property = $reflection->getProperty($getter);
-          $property->setAccessible(true);
+          $method = $reflection->getMethod($getter);
+          $method->setAccessible(true);
           $queryPartial->bindValue(':' . $attr . '_' . $k, $object->$getter());
-          $property->setAccessible(false);
+          $method->setAccessible(false);
         }
         $i++;
       }
