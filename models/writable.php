@@ -98,7 +98,7 @@ abstract class Writable extends Readable
     $fields     = '(';
     foreach ($attributes as $k => $v)
     {
-      if ($k != 'id')
+      if ($k != 'id' || $v != 0)
       {
         $attrGetter[$k] = 'get' . Tools::capitalize($k);
         $fields .= $k . ', ';
