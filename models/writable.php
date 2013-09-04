@@ -149,6 +149,8 @@ abstract class Writable extends Readable
     /* Executing loop, filling values and executing queries */
     $nbFullInserts = (int)($nbTotalRows / $rowsByInsert);
 
+    $reflection = new \ReflectionClass(get_called_class());
+
     $pdo->beginTransaction();
 
     $i = 0;
@@ -158,7 +160,12 @@ abstract class Writable extends Readable
       {
         $object = $objects[$i];
         foreach ($attrGetter as $attr => $getter)
+        {
+          $property = $reflection->getProperty($getter);
+          $property->setAccessible(true);
           $queryFull->bindValue(':' . $attr . '_' . $k, $object->$getter());
+          $property->setAccessible(false);
+        }
         $i++;
       }
       $queryFull->execute();
@@ -169,7 +176,12 @@ abstract class Writable extends Readable
       {
         $object = $objects[$i];
         foreach ($attrGetter as $attr => $getter)
+        {
+          $property = $reflection->getProperty($getter);
+          $property->setAccessible(true);
           $queryPartial->bindValue(':' . $attr . '_' . $k, $object->$getter());
+          $property->setAccessible(false);
+        }
         $i++;
       }
       $queryPartial->execute();
