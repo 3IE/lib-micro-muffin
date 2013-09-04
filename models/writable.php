@@ -164,7 +164,7 @@ abstract class Writable extends Readable
           $method = $reflection->getMethod($getter);
           if (!$method->isPrivate())
           {
-            $property = $reflection->getProperty($attr);
+            $property = $reflection->getProperty('_' . $attr);
             $property->setAccessible(true);
             $val = $property->getValue($object);
             $property->setAccessible(false);
@@ -187,7 +187,7 @@ abstract class Writable extends Readable
           $method = $reflection->getMethod($getter);
           if (!$method->isPrivate())
           {
-            $property = $reflection->getProperty($attr);
+            $property = $reflection->getProperty('_' . $attr);
             $property->setAccessible(true);
             $val = $property->getValue($object);
             $property->setAccessible(false);
