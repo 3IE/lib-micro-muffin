@@ -170,7 +170,7 @@ class Generator
     $str .= TAB . TAB . 'return $this->_' . $field . ";\n" . TAB . "}\n\n";
 
     //Writting setter
-    $str .= TAB . ($visible ? "public" : "private") . " function set" . $fieldCapitalize . '($' . $field . ")\n" . TAB . "{\n";
+    $str .= TAB . "public function set" . $fieldCapitalize . '($' . $field . ")\n" . TAB . "{\n";
     $str .= TAB . TAB . '$this->_objectEdited();' . "\n";
     $str .= TAB . TAB . '$this->_' . $field . ' = $' . $field . ";\n" . TAB . "}\n\n";
 
