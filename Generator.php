@@ -166,7 +166,7 @@ class Generator
     $str                = TAB . 'protected' . ' $_' . $field . " = " . $this->formatValidDefaultValue($column_defaults[$field]) . ";\n\n";
 
     //Writing getter
-    $str .= TAB . ($visible ? "public" : "private") . " function get" . $fieldCapitalize . "()\n" . TAB . "{\n";
+    $str .= TAB . "public function get" . $fieldCapitalize . "()\n" . TAB . "{\n";
     $str .= TAB . TAB . 'return $this->_' . $field . ";\n" . TAB . "}\n\n";
 
     //Writting setter
