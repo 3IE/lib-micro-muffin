@@ -40,7 +40,7 @@ abstract class Writable extends Readable
    */
   public static function getTableSequenceName()
   {
-    return self::$sequence_name;
+    return static::$sequence_name;
   }
 
   /**
