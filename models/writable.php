@@ -36,6 +36,14 @@ abstract class Writable extends Readable
   }
 
   /**
+   * @return string
+   */
+  public static function getTableSequenceName()
+  {
+    return static::$sequence_name;
+  }
+
+  /**
    * Add or update the model in database
    *
    * @return void
