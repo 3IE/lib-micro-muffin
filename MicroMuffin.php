@@ -55,6 +55,7 @@ class MicroMuffin
       $this->route = $route;
     else
     {
+      header("HTTP/1.0 404 Not Found");
       $e = new \Error("Page not found", "The page you are looking for doesn't exist.");
       $e->display();
     }
