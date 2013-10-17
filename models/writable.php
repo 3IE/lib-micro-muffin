@@ -179,7 +179,7 @@ abstract class Writable extends Readable
           }
           else
             $val = $object->$getter();
-          $queryFull->bindValue(':' . $attr . '_' . $k, $val); //$object->$getter());
+          $queryFull->bindValue(':' . $attr . '_' . $k, is_bool($val) ? ($val ? 'true' : 'false') : $val);
         }
         $i++;
       }
@@ -202,7 +202,7 @@ abstract class Writable extends Readable
           }
           else
             $val = $object->$getter();
-          $queryPartial->bindValue(':' . $attr . '_' . $k, $val); //$object->$getter());
+          $queryPartial->bindValue(':' . $attr . '_' . $k, is_bool($val) ? ($val ? 'true' : 'false') : $val);
         }
         $i++;
       }
