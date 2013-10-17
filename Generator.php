@@ -342,7 +342,7 @@ class Generator
     $str .= TAB . TAB . "\$pdo->beginTransaction();\n";
     $str .= TAB . TAB . "\$query = \$pdo->prepare(\$sql);\n";
     $str .= TAB . TAB . "foreach(\$attributes as \$k => \$v)\n";
-    $str .= TAB . TAB . TAB . "\$query->bindValue(':' . \$k, \$v);\n";
+    $str .= TAB . TAB . TAB . "\$query->bindValue(':' . \$k, is_bool(\$v) ? (\$v ? 'true' : 'false') : \$v);\n";
     $str .= TAB . TAB . "\$query->execute();\n";
     $str .= TAB . TAB . "\$pdo->commit();\n";
     $str .= TAB . "}\n\n";
