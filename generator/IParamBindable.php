@@ -17,5 +17,5 @@ interface IParamBindable
    * @param mixed $paramValue
    * @return bool
    */
-  public function bindPDOValue(\PDOStatement &$statement, $sParamName, $paramValue);
+  public static function bindPDOValue(\PDOStatement &$statement, $sParamName, $paramValue);
 }

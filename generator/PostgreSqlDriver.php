@@ -229,7 +229,7 @@ class PostgreSqlDriver extends Driver
    * @param mixed $paramValue
    * @return bool
    */
-  public function bindPDOValue(\PDOStatement &$statement, $sParamName, $paramValue)
+  public static function bindPDOValue(\PDOStatement &$statement, $sParamName, $paramValue)
   {
     if (is_bool($paramValue))
     {
