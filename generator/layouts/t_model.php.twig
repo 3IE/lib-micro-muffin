@@ -102,11 +102,15 @@ abstract class {{ tClassName }} extends \Lib\Models\Deletable
     $query = $pdo->prepare('SELECT * FROM {{ findProcedureName }}({{ find_placeholder }})');
 
     //Parameters binding
+    $driver = \Lib\MicroMuffin::getDBDriver();
 {% for f in pkFields %}
+    $driver::bindPDOValue($query, ':{{ f.getName }}', ${{ f.getName }});
+    {#
     if (is_string(${{ f.getName }}))
       $query->bindValue(':{{ f.getName }}', ${{ f.getName }}, PDO::PARAM_STR);
     else
       $query->bindValue(':{{ f.getName }}', ${{ f.getName }});
+      #}
 {% endfor %}
 
     $query->execute();

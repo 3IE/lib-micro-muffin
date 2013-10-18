@@ -9,6 +9,8 @@
 
 namespace Lib;
 
+use Lib\Generator\Driver;
+use Lib\Generator\DriverType;
 use Lib\Router\Route;
 use Lib\Router\Router;
 
@@ -20,6 +22,9 @@ class MicroMuffin
   /** @var MicroMuffin */
   private static $instance = null;
 
+  /** @var bool */
+  private static $bInitialized = false;
+
   /** @var Route */
   private $route;
 
@@ -29,9 +34,10 @@ class MicroMuffin
   /** @var string */
   private $action;
 
-  private function init()
+  private static function init()
   {
     require_once('autoloader.php');
+    require_once('generator/DriverType.php');
     require_once('../config/config.php');
     require_once('config.php');
 
@@ -143,6 +149,22 @@ class MicroMuffin
   }
 
   /**
+   * @return Driver
+   */
+  public static function getDBDriver()
+  {
+    if (!self::$bInitialized)
+      self::init();
+
+    if (DBDRIVER == Generator\DriverType::POSTGRESQL)
+      $driver = new Generator\PostgreSqlDriver();
+    else
+      throw new \Exception('Invalid database driver');
+
+    return $driver;
+  }
+
+  /**
    * @return MicroMuffin
    */
   public static function getInstance()
@@ -153,7 +175,7 @@ class MicroMuffin
   public static function run()
   {
     self::$instance = new MicroMuffin();
-    self::$instance->init();
+    self::init();
     self::$instance->route();
     self::$instance->checkRoute();
     self::$instance->execute();

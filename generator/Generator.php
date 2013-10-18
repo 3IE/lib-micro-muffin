@@ -9,11 +9,22 @@
 
 namespace Lib\Generator;
 
+use Lib\MicroMuffin;
+
 class Generator
 {
+  private static function init()
+  {
+    require_once(__DIR__ . '/../autoloader.php');
+    require_once(__DIR__ . '/../config.php');
+    require_once(__DIR__ . '/../../config/config.php');
+  }
+
   public static function run()
   {
-    $driver = new PostgreSqlDriver();
+    self::init();
+
+    $driver = MicroMuffin::getDBDriver();
     $schema = $driver->getAbstractSchema();
 
     //r($schema);
