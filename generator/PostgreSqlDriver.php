@@ -11,6 +11,7 @@ namespace Lib\Generator;
 
 use Lib\PDOS;
 use Lib\Tools;
+use \PDO;
 
 class PostgreSqlDriver extends Driver
 {
@@ -219,8 +220,27 @@ class PostgreSqlDriver extends Driver
     OWNER TO \"" . DBUSER . "\";");
     $pdo->commit();
 
-    //$this->writeLine(' ' . $procedureName . '() written in database');
-
     return $procedureName;
+  }
+
+  /**
+   * @param \PDOStatement $statement
+   * @param string $sParamName
+   * @param mixed $paramValue
+   * @return bool
+   */
+  public function bindPDOValue(\PDOStatement &$statement, $sParamName, $paramValue)
+  {
+    if (is_bool($paramValue))
+    {
+      $iParamType = PDO::PARAM_BOOL;
+      $paramValue = $paramValue ? 'true' : 'false';
+    }
+    else if (is_int($paramValue))
+      $iParamType = PDO::PARAM_INT;
+    else
+      $iParamType = PDO::PARAM_STR;
+
+    return $statement->bindValue($sParamName, $paramValue, $iParamType);
   }
 }

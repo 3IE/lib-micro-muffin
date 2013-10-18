@@ -9,7 +9,7 @@
 
 namespace Lib\Generator;
 
-abstract class Driver
+abstract class Driver implements IParamBindable
 {
   /** @var AbstractSchema */
   protected $abstractSchema;
