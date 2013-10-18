@@ -68,8 +68,9 @@ class Generator
 
   private function init()
   {
-    define('NOAUTOLOAD', true);
+    //define('NOAUTOLOAD', true);
 
+    require_once(__DIR__ . '/autoloader.php');
     require_once(__DIR__ . '/config.php');
     require_once(__DIR__ . '/MicroMuffin.php');
     require_once(__DIR__ . '/pdos.php');
@@ -165,11 +166,11 @@ class Generator
     $str                = TAB . 'protected' . ' $_' . $field . " = " . $this->formatValidDefaultValue($column_defaults[$field]) . ";\n\n";
 
     //Writing getter
-    $str .= TAB . ($visible ? "public" : "private") . " function get" . $fieldCapitalize . "()\n" . TAB . "{\n";
+    $str .= TAB . "public function get" . $fieldCapitalize . "()\n" . TAB . "{\n";
     $str .= TAB . TAB . 'return $this->_' . $field . ";\n" . TAB . "}\n\n";
 
     //Writting setter
-    $str .= TAB . ($visible ? "public" : "private") . " function set" . $fieldCapitalize . '($' . $field . ")\n" . TAB . "{\n";
+    $str .= TAB . "public function set" . $fieldCapitalize . '($' . $field . ")\n" . TAB . "{\n";
     $str .= TAB . TAB . '$this->_objectEdited();' . "\n";
     $str .= TAB . TAB . '$this->_' . $field . ' = $' . $field . ";\n" . TAB . "}\n\n";
 
@@ -341,7 +342,7 @@ class Generator
     $str .= TAB . TAB . "\$pdo->beginTransaction();\n";
     $str .= TAB . TAB . "\$query = \$pdo->prepare(\$sql);\n";
     $str .= TAB . TAB . "foreach(\$attributes as \$k => \$v)\n";
-    $str .= TAB . TAB . TAB . "\$query->bindValue(':' . \$k, \$v);\n";
+    $str .= TAB . TAB . TAB . "\$query->bindValue(':' . \$k, is_bool(\$v) ? (\$v ? 'true' : 'false') : \$v);\n";
     $str .= TAB . TAB . "\$query->execute();\n";
     $str .= TAB . TAB . "\$pdo->commit();\n";
     $str .= TAB . "}\n\n";

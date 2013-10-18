@@ -52,7 +52,7 @@ abstract class Model
    * @param \ReflectionClass $r
    * @return array
    */
-  protected function getAttributes(\ReflectionClass $r)
+  public function getAttributes(\ReflectionClass $r)
   {
     $attributes       = array();
     $class            = $r->getShortName();

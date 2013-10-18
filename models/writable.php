@@ -36,6 +36,14 @@ abstract class Writable extends Readable
   }
 
   /**
+   * @return string
+   */
+  public static function getTableSequenceName()
+  {
+    return static::$sequence_name;
+  }
+
+  /**
    * Add or update the model in database
    *
    * @return void
@@ -98,7 +106,7 @@ abstract class Writable extends Readable
     $fields     = '(';
     foreach ($attributes as $k => $v)
     {
-      if ($k != 'id')
+      if ($k != 'id' || $v != 0)
       {
         $attrGetter[$k] = 'get' . Tools::capitalize($k);
         $fields .= $k . ', ';
@@ -149,6 +157,8 @@ abstract class Writable extends Readable
     /* Executing loop, filling values and executing queries */
     $nbFullInserts = (int)($nbTotalRows / $rowsByInsert);
 
+    $reflection = new \ReflectionClass(get_called_class());
+
     $pdo->beginTransaction();
 
     $i = 0;
@@ -158,7 +168,19 @@ abstract class Writable extends Readable
       {
         $object = $objects[$i];
         foreach ($attrGetter as $attr => $getter)
-          $queryFull->bindValue(':' . $attr . '_' . $k, $object->$getter());
+        {
+          $method = $reflection->getMethod($getter);
+          if ($method->isPrivate())
+          {
+            $property = $reflection->getProperty('_' . $attr);
+            $property->setAccessible(true);
+            $val = $property->getValue($object);
+            $property->setAccessible(false);
+          }
+          else
+            $val = $object->$getter();
+          $queryFull->bindValue(':' . $attr . '_' . $k, is_bool($val) ? ($val ? 'true' : 'false') : $val);
+        }
         $i++;
       }
       $queryFull->execute();
@@ -169,7 +191,19 @@ abstract class Writable extends Readable
       {
         $object = $objects[$i];
         foreach ($attrGetter as $attr => $getter)
-          $queryPartial->bindValue(':' . $attr . '_' . $k, $object->$getter());
+        {
+          $method = $reflection->getMethod($getter);
+          if ($method->isPrivate())
+          {
+            $property = $reflection->getProperty('_' . $attr);
+            $property->setAccessible(true);
+            $val = $property->getValue($object);
+            $property->setAccessible(false);
+          }
+          else
+            $val = $object->$getter();
+          $queryPartial->bindValue(':' . $attr . '_' . $k, is_bool($val) ? ($val ? 'true' : 'false') : $val);
+        }
         $i++;
       }
       $queryPartial->execute();
