@@ -24,12 +24,12 @@ abstract class {{ tClassName }} extends \Lib\Models\Deletable
 {% for mto in manyToOne %}
   protected $_{{ mto.getField }} = null;
 
-  private function get{{ mto.getField | capitalize }}()
+  public function get{{ mto.getField | capitalize }}()
   {
     return $this->_{{ mto.getField }};
   }
 
-  private function set{{ mto.getField | capitalize }}(${{ mto.getField }})
+  public function set{{ mto.getField | capitalize }}(${{ mto.getField }})
   {
     $this->_objectEdited();
     $this->_{{ mto.getField }} = ${{ mto.getField }};
