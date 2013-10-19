@@ -59,10 +59,20 @@ class AbstractSchema
     $this->init();
 
     $this->writeT_Models();
+    $this->writeModels();
   }
 
   private function writeModels()
   {
+    foreach ($this->tables as $table)
+    {
+      $save_dir = __DIR__ . '/tmp/';
+      $fileName = '' . Tools::removeSFromTableName($table->getName()) . '.php';
+
+      $file = fopen($save_dir . $fileName, "w");
+      fwrite($file, $this->ModelToString($table));
+      fclose($file);
+    }
   }
 
   private function writeT_Models()
@@ -76,6 +86,13 @@ class AbstractSchema
       fwrite($file, $this->T_ModelToString($table));
       fclose($file);
     }
+  }
+
+  private function ModelToString(Table $table)
+  {
+    $variables['className'] = $table->getClassName();
+
+    return $this->twig->render('model.php.twig', $variables);
   }
 
   private function T_ModelToString(Table $table)
@@ -114,9 +131,6 @@ class AbstractSchema
       }
     }
     $variables['oneToMany'] = is_null($otm) ? array() : $table->getOneToManyJoins();
-
-    //r($table->getOneToManyJoins());
-    //die();
 
     //Find
     $find_params      = '';
