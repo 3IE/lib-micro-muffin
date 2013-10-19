@@ -20,6 +20,9 @@ class ManyToOne
   /** @var string  */
   private $targetTable;
 
+  /** @var string */
+  private $cleanField;
+
   /**
    * @param string $field
    * @param string $targetField
@@ -30,6 +33,35 @@ class ManyToOne
     $this->field       = $field;
     $this->targetField = $targetField;
     $this->targetTable = $targetTable;
+    $this->cleanSourceField();
+  }
+
+  private function cleanSourceField()
+  {
+    $aSubs = explode('_' . $this->targetField, $this->field);
+    if (count($aSubs) > 0)
+      $this->cleanField = $aSubs[0];
+    else
+    {
+      $aSubs = explode('_', $this->field);
+      $this->cleanField = $aSubs[0];
+    }
+  }
+
+  /**
+   * @param string $cleanField
+   */
+  public function setCleanField($cleanField)
+  {
+    $this->cleanField = $cleanField;
+  }
+
+  /**
+   * @return string
+   */
+  public function getCleanField()
+  {
+    return $this->cleanField;
   }
 
   /**

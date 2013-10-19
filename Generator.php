@@ -71,6 +71,7 @@ class Generator
     //define('NOAUTOLOAD', true);
 
     require_once(__DIR__ . '/autoloader.php');
+    require_once(__DIR__ . '/generator/DriverType.php');
     require_once(__DIR__ . '/config.php');
     require_once(__DIR__ . '/MicroMuffin.php');
     require_once(__DIR__ . '/pdos.php');

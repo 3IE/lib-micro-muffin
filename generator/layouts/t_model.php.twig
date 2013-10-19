@@ -1,9 +1,9 @@
 <?php
 abstract class {{ tClassName }} extends \Lib\Models\Deletable
 {
-  protected static $table_name = '{{ tableName }}';
+  protected static $table_name    = '{{ tableName }}';
   protected static $sequence_name = '{{ sequenceName }}';
-  protected static $primary_keys = array({{ primaryKey }});
+  protected static $primary_keys  = array({{ primaryKey }});
 
 {% for f in fields %}
   protected $_{{ f.getName }} = {{ f.defaultValueToString }};
@@ -36,12 +36,12 @@ abstract class {{ tClassName }} extends \Lib\Models\Deletable
   }
 
 {% set className = mto.getTargetTable | capitalize | removeS %}
-{% set attrName = mto.getTargetTable | removeS %}
+{% set attrName = mto.getCleanField %}
   /** @var {{ className }} */
   protected ${{ attrName }} = null;
 
   /** @return {{ className }} */
-  public function get{{ className }}()
+  public function get{{ attrName | capitalize }}()
   {
     if (is_null($this->{{ attrName }}))
       $this->{{ attrName }} = {{ className }}::find($this->_{{ mto.getField }});
@@ -49,7 +49,7 @@ abstract class {{ tClassName }} extends \Lib\Models\Deletable
   }
 
   /** @param {{ className }} ${{ attrName }} */
-  public function set{{ className }}(${{ attrName }})
+  public function set{{ attrName | capitalize }}(${{ attrName }})
   {
     $this->{{ attrName }} = ${{ attrName }};
     $this->_{{ mto.getField }} = ${{ attrName}}->get{{ mto.getTargetField | capitalize }}();
@@ -105,12 +105,6 @@ abstract class {{ tClassName }} extends \Lib\Models\Deletable
     $driver = \Lib\MicroMuffin::getDBDriver();
 {% for f in pkFields %}
     $driver::bindPDOValue($query, ':{{ f.getName }}', ${{ f.getName }});
-    {#
-    if (is_string(${{ f.getName }}))
-      $query->bindValue(':{{ f.getName }}', ${{ f.getName }}, PDO::PARAM_STR);
-    else
-      $query->bindValue(':{{ f.getName }}', ${{ f.getName }});
-      #}
 {% endfor %}
 
     $query->execute();
