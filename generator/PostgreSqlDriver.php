@@ -243,4 +243,28 @@ class PostgreSqlDriver extends Driver
 
     return $statement->bindValue($sParamName, $paramValue, $iParamType);
   }
+
+  private function readCustomStoredProcedures()
+  {
+    $pdo = PDOS::getInstance();
+
+    $query = $pdo->prepare("
+    SELECT
+      r.routine_name,
+      r.type_udt_name AS routine_return_type,
+      p.ordinal_position AS parameter_position,
+      p.parameter_name,
+      p.data_type AS parameter_type,
+      p.parameter_mode
+    FROM
+      information_schema.routines r
+      LEFT JOIN information_schema.parameters p ON p.specific_name = r.specific_name
+    WHERE
+      r.specific_schema = '" . DBSCHEMA . "' AND
+      r.routine_type = 'FUNCTION' AND
+      r.routine_name LIKE 'sp_%'
+    ORDER BY
+      r.routine_name, parameter_position
+    ");
+  }
 }
