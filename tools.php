@@ -11,73 +11,86 @@ namespace Lib;
 
 class Tools
 {
-  /**
-   * @param string $name
-   * @param null $default
-   * @return mixed
-   */
-  public static function getParam($name, $default = null)
-  {
-    return isset($_GET[$name]) ? $_GET[$name] : $default;
-  }
-
-  /**
-   * @param string $str
-   * @return string
-   */
-  public static function capitalize($str)
-  {
-    $up    = $str;
-    $up[0] = strtoupper($up[0]);
-    return $up;
-  }
-
-  /**
-   * @param string $sStr
-   * @return string
-   */
-  public static function sanitizeForUrl($sStr)
-  {
-    $ISOTransChar = array("'"      => '-', ' "' => '-',
-                          'áŕĺäâă' => 'a', 'ÁŔĹÄÂĂ' => 'A', 'éčëę' => 'e', 'ÉČËĘ' => 'E',
-                          'íěďîĄ'  => 'i', 'ÍĚĎÎ' => 'I', 'óňöôőđ' => 'o', 'ř' => '0', 'ÓŇÖÔŐŘ' => 'O',
-                          'ľúůüű'  => 'u', 'ÚŮÜŰ' => 'U', 'ý˙' => 'y', 'Ý' => 'Y',
-                          'ć'      => 'ae', 'Ć' => 'AE', '' => 'oe', '' => 'OE',
-                          'ß'      => 'B', 'ç' => 'c', 'Ç' => 'C', 'Đ' => 'D', 'ń' => 'n', 'Ń' => 'N',
-                          'Ţ'      => 'p', 'ţ' => 'P', '' => 's', '' => 'S');
-
-    $tmp = array();
-    for ($c = 0; $c < strlen($sStr); $c++)
+    /**
+     * @param string $name
+     * @param null $default
+     * @return mixed
+     */
+    public static function getParam($name, $default = null)
     {
-      $carac = $sStr{$c};
-      foreach ($ISOTransChar as $chars => $r)
-      {
-        if (strpos($chars, $sStr{$c}) > -1 || strpos(utf8_decode($chars), $sStr{$c}) > -1)
-        {
-          $carac = $r;
-          break;
-        }
-      }
-      $tmp[] = $carac;
+        return isset($_GET[$name]) ? $_GET[$name] : $default;
     }
 
-    $newStr = implode("", $tmp);
-    $newStr = preg_replace('/--+/', '-', $newStr);
-    $newStr = preg_replace('/([^a-z0-9_-])/i', '', $newStr);
-    $newStr = preg_replace('/([-])$/', '', $newStr);
-    $newStr = strtolower($newStr);
+    /**
+     * @param string $str
+     * @return string
+     */
+    public static function capitalize($str)
+    {
+        $up    = $str;
+        $up[0] = strtoupper($up[0]);
+        return $up;
+    }
 
-    return $newStr;
-  }
+    /**
+     * @param string $sStr
+     * @return string
+     */
+    public static function sanitizeForUrl($sStr)
+    {
+        $ISOTransChar = array("'"      => '-', ' "' => '-',
+                              'áŕĺäâă' => 'a', 'ÁŔĹÄÂĂ' => 'A', 'éčëę' => 'e', 'ÉČËĘ' => 'E',
+                              'íěďîĄ'  => 'i', 'ÍĚĎÎ' => 'I', 'óňöôőđ' => 'o', 'ř' => '0', 'ÓŇÖÔŐŘ' => 'O',
+                              'ľúůüű'  => 'u', 'ÚŮÜŰ' => 'U', 'ý˙' => 'y', 'Ý' => 'Y',
+                              'ć'      => 'ae', 'Ć' => 'AE', '' => 'oe', '' => 'OE',
+                              'ß'      => 'B', 'ç' => 'c', 'Ç' => 'C', 'Đ' => 'D', 'ń' => 'n', 'Ń' => 'N',
+                              'Ţ'      => 'p', 'ţ' => 'P', '' => 's', '' => 'S');
 
-  public static function randomStr($car)
-  {
-    $string = "";
-    $chaine = "abcdefghijklmnpqrstuvwxy0123456789";
-    srand((double)microtime() * 1000000);
-    for ($i = 0; $i < $car; $i++)
-      $string .= $chaine[rand() % strlen($chaine)];
+        $tmp = array();
+        for ($c = 0; $c < strlen($sStr); $c++)
+        {
+            $carac = $sStr{$c};
+            foreach ($ISOTransChar as $chars => $r)
+            {
+                if (strpos($chars, $sStr{$c}) > -1 || strpos(utf8_decode($chars), $sStr{$c}) > -1)
+                {
+                    $carac = $r;
+                    break;
+                }
+            }
+            $tmp[] = $carac;
+        }
 
-    return $string;
-  }
+        $newStr = implode("", $tmp);
+        $newStr = preg_replace('/--+/', '-', $newStr);
+        $newStr = preg_replace('/([^a-z0-9_-])/i', '', $newStr);
+        $newStr = preg_replace('/([-])$/', '', $newStr);
+        $newStr = strtolower($newStr);
+
+        return $newStr;
+    }
+
+    /**
+     * @param int $car
+     * @return string
+     */
+    public static function randomStr($car)
+    {
+        $string = "";
+        $chaine = "abcdefghijklmnpqrstuvwxy0123456789";
+        srand((double)microtime() * 1000000);
+        for ($i = 0; $i < $car; $i++)
+            $string .= $chaine[rand() % strlen($chaine)];
+
+        return $string;
+    }
+
+    /**
+     * @param string $stripAccents
+     * @return string
+     */
+    public static function stripAccents($stripAccents)
+    {
+        return strtr($stripAccents, 'àáâãäçèéêëìíîïñòóôõöùúûüýÿÀÁÂÃÄÇÈÉÊËÌÍÎÏÑÒÓÔÕÖÙÚÛÜÝ', 'aaaaaceeeeiiiinooooouuuuyyAAAAACEEEEIIIINOOOOOUUUUY');
+    }
 }
