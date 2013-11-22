@@ -494,7 +494,7 @@ class Generator
       fwrite($file, "}\n");
       fclose($file);
 
-      chmod($filename, RO_CHMOD);
+      chmod($filename, W_CHMOD);
     }
   }
 
@@ -751,7 +751,7 @@ class Generator
       fwrite($file, $buffer);
       fclose($file);
 
-      chmod($filepath, RO_CHMOD);
+      chmod($filepath, W_CHMOD);
       $this->writeLine(" " . $className . " model written");
     }
   }
