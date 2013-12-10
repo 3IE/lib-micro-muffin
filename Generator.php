@@ -460,11 +460,20 @@ class Generator
       if ($this->haveSequence($originalTableName))
         fwrite($file, TAB . "protected static \$sequence_name = '" . $sequences[$tableName] . "';\n");
 
+      $sFieldsList  = '';
       $primary_keys = "protected static \$primary_keys = array(";
       foreach ($this->primaryKeys[$originalTableName] as $pk)
+      {
         $primary_keys .= "'" . $pk['name'] . "', ";
+        $sFieldsList .= "'" . $pk['name'] . "', ";
+      }
       $primary_keys = substr($primary_keys, 0, -2) . ');';
       fwrite($file, TAB . $primary_keys . "\n");
+
+      foreach ($fields as $f)
+        $sFieldsList .= "'$f', ";
+      $sFieldsList = substr($sFieldsList, 0, -2);
+      fwrite($file, TAB . "protected static \$_fields = array($sFieldsList);\n");
 
       fwrite($file, "\n");
 

@@ -9,6 +9,7 @@
 
 namespace Lib\Models;
 
+use Lib\Log;
 use Lib\PDOS;
 
 abstract class Readable extends Model
@@ -23,11 +24,13 @@ abstract class Readable extends Model
   protected static $procstock_take = null;
   /** @var array */
   protected static $primary_keys = array();
+  /** @var array */
+  protected static $_fields = array();
 
   /**
    * Find all models in database
    *
-   * @param string $order
+   * @param array|string $order
    * @return self[]
    */
   public static function all($order = null)
@@ -35,6 +38,8 @@ abstract class Readable extends Model
     $class = strtolower(get_called_class());
     $proc  = self::$procstock_all != null ? self::$procstock_all : $class . 's';
     $pdo   = PDOS::getInstance();
+
+    $order = self::handleOrder($order);
 
     if (is_null($order))
       $query = $pdo->prepare('SELECT * FROM getall' . $proc . '()');
@@ -52,6 +57,47 @@ abstract class Readable extends Model
       $outputs[] = $object;
     }
     return $outputs;
+  }
+
+  /**
+   * @param array|string $order
+   * @throws \Exception
+   * @return string|null
+   */
+  private static function handleOrder($order)
+  {
+    if (is_array($order))
+    {
+      $sReturningOrder = '';
+      foreach ($order as $sRow)
+      {
+        $aChunks = explode(' ', $sRow);
+        if (in_array($aChunks[0], static::$_fields))
+        {
+          $sReturningOrder .= $aChunks[0];
+          if (count($aChunks) > 1)
+          {
+            $direction = $aChunks[1];
+            if (strtolower($direction) == 'asc' || strtolower($direction) == 'desc')
+              $sReturningOrder .= ' ' . $direction;
+          }
+          $sReturningOrder .= ', ';
+        }
+        else
+          throw new \Exception('readable::handleOrder : Trying to order by a column that doesn\'t exist on '. static::getTableName());
+      }
+
+      return substr($sReturningOrder, 0, -2);
+    }
+    else if (is_string($order))
+    {
+      Log::write('Warning ! Readable::all(string) and Readable::take(int, int, string) are deprecated.
+      Please use Readable::all(Array) and Readable::take(int, int, Array) instead.');
+
+      return $order;
+    }
+    else
+      return null;
   }
 
   /**
@@ -99,7 +145,7 @@ abstract class Readable extends Model
   /**
    * @param $number
    * @param int $offset
-   * @param null $order
+   * @param array|string $order
    * @return $this[]
    */
   public static function take($number, $offset = 0, $order = null)
@@ -107,6 +153,8 @@ abstract class Readable extends Model
     $class = strtolower(get_called_class());
     $proc  = self::$procstock_take != null ? self::$procstock_count : 'take' . $class . 's';
     $pdo   = PDOS::getInstance();
+
+    $order = self::handleOrder($order);
 
     $query = $pdo->prepare('SELECT * FROM ' . $proc . '(:start, :number, :order)');
     $query->bindValue(':start', $offset);
