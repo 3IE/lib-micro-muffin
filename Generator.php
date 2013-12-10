@@ -462,8 +462,10 @@ class Generator
 
       $sFieldsList  = '';
       $primary_keys = "protected static \$primary_keys = array(";
+      $aPk = array();
       foreach ($this->primaryKeys[$originalTableName] as $pk)
       {
+        $aPk[] = $pk['name'];
         $primary_keys .= "'" . $pk['name'] . "', ";
         $sFieldsList .= "'" . $pk['name'] . "', ";
       }
@@ -471,7 +473,10 @@ class Generator
       fwrite($file, TAB . $primary_keys . "\n");
 
       foreach ($fields as $f)
-        $sFieldsList .= "'$f', ";
+      {
+        if (!in_array($f, $aPk))
+          $sFieldsList .= "'$f', ";
+      }
       $sFieldsList = substr($sFieldsList, 0, -2);
       fwrite($file, TAB . "protected static \$_fields = array($sFieldsList);\n");
 
