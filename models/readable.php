@@ -105,11 +105,12 @@ abstract class Readable extends Model
 
   /**
    * @param array|string $where_clause
+   * @param array $order
    * @param int $where_mode
    * @throws \Exception
    * @return self[]
    */
-  public static function where($where_clause, $where_mode = self::WHERE_MODE_AND)
+  public static function where($where_clause, $order = null, $where_mode = self::WHERE_MODE_AND)
   {
     $class = strtolower(get_called_class());
     $proc  = static::$procstock_all != null ? static::$procstock_all : 'getall' . $class . 's';
@@ -158,7 +159,6 @@ abstract class Readable extends Model
 
       //Removing that last AND or OR
       $sWhereClause = substr($sWhereClause, 0, -1 * (strlen($sSeparator) + 2));
-      var_dump($sWhereClause);
     }
     else
     {
@@ -167,7 +167,11 @@ abstract class Readable extends Model
       $sWhereClause = $where_clause;
     }
 
-    $query = $pdo->prepare('SELECT * FROM ' . $proc . '() WHERE ' . $sWhereClause);
+    $order = self::handleOrder($order);
+    if (!is_null($order))
+      $order = ' ORDER BY ' . $order;
+
+    $query = $pdo->prepare('SELECT * FROM ' . $proc . '() WHERE ' . $sWhereClause . $order);
     $query->execute();
 
     $datas = $query->fetchAll();
