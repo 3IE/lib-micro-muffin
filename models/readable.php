@@ -14,6 +14,9 @@ use Lib\PDOS;
 
 abstract class Readable extends Model
 {
+  const WHERE_MODE_AND = 1;
+  const WHERE_MODE_OR  = 2;
+
   /** @var string|null */
   protected static $procstock_find = null;
   /** @var string|null */
@@ -84,14 +87,14 @@ abstract class Readable extends Model
           $sReturningOrder .= ', ';
         }
         else
-          throw new \Exception('readable::handleOrder : Trying to order by a column that doesn\'t exist on '. static::getTableName());
+          throw new \Exception('readable::handleOrder : Trying to order by a column that doesn\'t exist on ' . static::getTableName());
       }
 
       return substr($sReturningOrder, 0, -2);
     }
     else if (is_string($order))
     {
-      Log::write('Warning ! Readable::all(string) and Readable::take(int, int, string) are deprecated.
+      Log::write('Warning ! Readable::all(string) and Readable::take(int, int, string) are deprecated !
       Please use Readable::all(Array) and Readable::take(int, int, Array) instead.');
 
       return $order;
@@ -101,16 +104,70 @@ abstract class Readable extends Model
   }
 
   /**
-   * @param string $where_clause
+   * @param array|string $where_clause
+   * @param int $where_mode
+   * @throws \Exception
    * @return self[]
    */
-  public static function where($where_clause)
+  public static function where($where_clause, $where_mode = self::WHERE_MODE_AND)
   {
     $class = strtolower(get_called_class());
     $proc  = static::$procstock_all != null ? static::$procstock_all : 'getall' . $class . 's';
     $pdo   = PDOS::getInstance();
 
-    $query = $pdo->prepare('SELECT * FROM ' . $proc . '() WHERE ' . $where_clause);
+    $sWhereClause = '';
+    if (is_array($where_clause))
+    {
+      $sSeparator = $where_mode == self::WHERE_MODE_OR ? 'OR' : 'AND';
+
+      //array(array(field, operator, value), array(field, operator, value))
+      foreach ($where_clause as $aCondition)
+      {
+        if (is_array($aCondition) && count($aCondition) == 3)
+        {
+          $column   = $aCondition[0];
+          $operator = $aCondition[1];
+          $value    = $aCondition[2];
+
+          if (in_array($column, static::$_fields))
+          {
+            $valid_operators = array('=', '>', '<', '>=', '<=', '<>', 'IS', 'IS NOT', 'LIKE');
+            if (in_array($operator, $valid_operators))
+            {
+              if (is_bool($value))
+                $value = $value ? 'true' : 'false';
+              else if (is_string($value))
+              {
+                $value = pg_escape_string($value);
+                $value = '\'' . $value . '\'';
+              }
+              else if (is_null($value))
+                $value = 'NULL';
+
+              $sWhereClause .= $column . ' ' . $operator . ' ' . $value . ' ' . $sSeparator . ' ';
+            }
+            else
+              throw new \Exception('Readable::where : operator ' . $operator . ' is not a valid operator. Authorized operators are : ' . implode(', ', $valid_operators));
+          }
+          else
+            throw new \Exception('Readable::where : ' . $column . ' is not a column of table ' . static::getTableName());
+        }
+        else
+          throw new \Exception('Readable::where : Conditions must be arrays of this kind array(column, operator, value)');
+      }
+
+      //Removing that last AND or OR
+      $sWhereClause = substr($sWhereClause, 0, -1 * (strlen($sSeparator) + 2));
+      var_dump($sWhereClause);
+    }
+    else
+    {
+      Log::write('Warning ! Readable::where(string) is deprecated !
+      Please use Readable::where(Array) or stored procedures for advanced queries.');
+      $sWhereClause = $where_clause;
+    }
+
+    $query = $pdo->prepare('SELECT * FROM ' . $proc . '() WHERE ' . $sWhereClause);
     $query->execute();
 
     $datas = $query->fetchAll();
