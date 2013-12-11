@@ -77,7 +77,7 @@ class Tools
     public static function randomStr($car)
     {
         $string = "";
-        $chaine = "abcdefghijklmnpqrstuvwxy0123456789";
+        $chaine = "abcdefghjklmnpqrstuvwxyABCDEFGHJKLMNPQRSTUVWXYZ123456789";
         srand((double)microtime() * 1000000);
         for ($i = 0; $i < $car; $i++)
             $string .= $chaine[rand() % strlen($chaine)];
