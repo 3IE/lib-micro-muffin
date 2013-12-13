@@ -106,7 +106,7 @@ abstract class Readable extends Model
    * @param array $order
    * @param int $where_mode
    * @throws \Exception
-   * @return self[]
+   * @return static[]
    */
   public static function where($where_clause, $order = null, $where_mode = self::WHERE_MODE_AND)
   {
