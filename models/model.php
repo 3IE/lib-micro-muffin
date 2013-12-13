@@ -59,7 +59,7 @@ abstract class Model
   {
     $attributes       = array();
     $class            = $r->getShortName();
-    //$attributes['id'] = $this->_id;
+    $attributes['id'] = $this->_id;
 
     foreach ($r->getProperties() as $att)
     {
