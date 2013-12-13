@@ -49,7 +49,9 @@ class MicroMuffin
   private function route()
   {
     //Route determination
-    $url   = Tools::getParam("url", null);
+    $url = Tools::getParam("url", null);
+    Log::write('MicroMuffin::route : url called is ' . $url);
+
     $route = Router::get(!is_null($url) ? $url : "");
     if (!is_null($route))
       $this->route = $route;

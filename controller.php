@@ -9,7 +9,6 @@
 
 namespace Lib;
 
-
 class Controller
 {
   const SESSION_FLASH = '_flash';
@@ -73,6 +72,14 @@ class Controller
   public function getRenderLayout()
   {
     return $this->render_layout;
+  }
+
+  /**
+   * @param $title
+   */
+  public function setTitle($title)
+  {
+    $this->setLayoutVariable('title', $title);
   }
 
   /**

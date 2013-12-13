@@ -25,6 +25,7 @@ class Log
         fwrite(self::$instance->file, "\n====== ");
         fwrite(self::$instance->file, "Starting execution ");
         fwrite(self::$instance->file, "======\n");
+        fwrite(self::$instance->file, "micro-muffin v" . LIB_VERSION_NUMBER . "\n");
       }
     }
 
