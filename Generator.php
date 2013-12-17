@@ -56,6 +56,9 @@ class Generator
   /** @var array */
   private $primaryKeys;
 
+  /** @var array */
+  private $tables;
+
   private function __construct()
   {
     $this->tablesFields   = array();
@@ -730,7 +733,9 @@ class Generator
 
       //Execute function
       $buffer .= TAB . "/**\n";
-      if ($sp['return_type'] != 'record')
+      if (in_array($sp['return_type'], $this->tables))
+        $buffer .= TAB . " * @return ". Tools::capitalize($this->removeSFromTableName($sp['return_type'])). "[]\n";
+      else if ($sp['return_type'] != 'record')
         $buffer .= TAB . " * @return array\n";
       else
         $buffer .= TAB . " * @return " . $className . "[]\n";
@@ -742,11 +747,14 @@ class Generator
       $buffer .= TAB . TAB . "\$query->execute();\n";
       $buffer .= TAB . TAB . "\$res = array();\n";
 
-      if ($sp['return_type'] == 'record')
+      if ($sp['return_type'] == 'record' || in_array($sp['return_type'], $this->tables))
       {
         $buffer .= TAB . TAB . "foreach(\$query->fetchAll() as \$v)\n";
         $buffer .= TAB . TAB . "{\n";
-        $buffer .= TAB . TAB . TAB . "\$obj = new " . $className . "();\n";
+        if (in_array($sp['return_type'], $this->tables))
+            $buffer .= TAB . TAB . TAB . "\$obj = new " . Tools::capitalize($this->removeSFromTableName($sp['return_type'])) . "();\n";
+        else
+          $buffer .= TAB . TAB . TAB . "\$obj = new " . $className . "();\n";
         $buffer .= TAB . TAB . TAB . "self::hydrate(\$obj, \$v);\n";
         $buffer .= TAB . TAB . TAB . "\$res[] = \$obj;\n";
         $buffer .= TAB . TAB . "}\n";
@@ -980,6 +988,8 @@ class Generator
     //Foreach table, generates both T_Model and Model
     foreach ($tables as $table)
     {
+      $this->tables[] = $table;
+
       $fields            = $tables_fields[$table];
       $originalTableName = $table;
 
