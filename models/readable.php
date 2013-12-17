@@ -65,7 +65,7 @@ abstract class Readable extends Model
    * @throws \Exception
    * @return string|null
    */
-  private static function handleOrder($order)
+  protected static function handleOrder($order)
   {
     if (is_array($order))
     {
