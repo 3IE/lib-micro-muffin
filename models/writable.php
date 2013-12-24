@@ -70,7 +70,7 @@ abstract class Writable extends Readable
       $values = '(';
       foreach ($attributes as $k => $v)
       {
-        if ($k != 'id')
+        if ($k != 'id' || $v != 0)
         {
           $fields .= $k . ', ';
           $values .= ':' . $k . ', ';
@@ -230,7 +230,7 @@ abstract class Writable extends Readable
     $query = $pdo->prepare($query);
     foreach ($attributes as $k => $v)
     {
-      if ($k != 'id')
+      if ($k != 'id' || $v != 0)
       {
         if (is_bool($v))
           $query->bindValue(':' . $k, $v, \PDO::PARAM_BOOL);
@@ -239,7 +239,8 @@ abstract class Writable extends Readable
       }
     }
     $query->execute();
-    $this->setId($pdo->lastInsertId(static::$sequence_name));
+      if ($this->getId() == 0)
+        $this->setId($pdo->lastInsertId(static::$sequence_name));
     $pdo->commit();
   }
 
