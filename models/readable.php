@@ -65,7 +65,7 @@ abstract class Readable extends Model
    * @throws \Exception
    * @return string|null
    */
-  private static function handleOrder($order)
+  protected static function handleOrder($order)
   {
     if (is_array($order))
     {
@@ -205,7 +205,7 @@ abstract class Readable extends Model
    * @param $number
    * @param int $offset
    * @param array|string $order
-   * @return $this[]
+   * @return static[]
    */
   public static function take($number, $offset = 0, $order = null)
   {
