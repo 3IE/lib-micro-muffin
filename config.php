@@ -9,7 +9,7 @@
 
 namespace Lib;
 
-define('LIB_VERSION_NUMBER', '1.1.0');
+define('LIB_VERSION_NUMBER', '1.1.1');
 
 define('BASE_DIR', '');
 define('CONTROLLER_DIR', BASE_DIR . 'app/controller/');
