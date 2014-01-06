@@ -241,6 +241,7 @@ abstract class Writable extends Readable
     $query->execute();
     $this->setId($pdo->lastInsertId(static::$sequence_name));
     $pdo->commit();
+    $this->_notInserted = false;
   }
 
   protected abstract function update();
