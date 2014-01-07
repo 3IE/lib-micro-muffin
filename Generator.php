@@ -334,7 +334,7 @@ class Generator
     $str .= TAB . TAB . "\$where      = '';\n";
     $str .= TAB . TAB . "\$attributes = \$this->getAttributes(new \\ReflectionClass(\$this));\n";
     $str .= TAB . TAB . "foreach (\$attributes as \$k => \$v)\n";
-    $str .= TAB . TAB . TAB . "if (!in_array(\$k, self::\$primary_keys))\n";
+    $str .= TAB . TAB . TAB . "if (!in_array(\$k, self::\$primary_keys) && in_array(\$k, self::\$_fields))\n";
     $str .= TAB . TAB . TAB . TAB . "\$set .= \$k . ' = :' . \$k . ', ';\n";
     $str .= TAB . TAB . "foreach (self::\$primary_keys as \$pk)\n";
     $str .= TAB . TAB . TAB . "\$where .= \$pk . ' = :' . \$pk . ' AND ';\n";
@@ -345,7 +345,8 @@ class Generator
     $str .= TAB . TAB . "\$pdo->beginTransaction();\n";
     $str .= TAB . TAB . "\$query = \$pdo->prepare(\$sql);\n";
     $str .= TAB . TAB . "foreach(\$attributes as \$k => \$v)\n";
-    $str .= TAB . TAB . TAB . "\$query->bindValue(':' . \$k, is_bool(\$v) ? (\$v ? 'true' : 'false') : \$v);\n";
+    $str .= TAB . TAB . TAB . "if (in_array(\$k, self::\$_fields))\n";
+    $str .= TAB . TAB . TAB . TAB . "\$query->bindValue(':' . \$k, is_bool(\$v) ? (\$v ? 'true' : 'false') : \$v);\n";
     $str .= TAB . TAB . "\$query->execute();\n";
     $str .= TAB . TAB . "\$pdo->commit();\n";
     $str .= TAB . "}\n\n";
