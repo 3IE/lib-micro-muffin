@@ -28,9 +28,6 @@ class Table
   /** @var ManyToOne[] */
   private $manyToOneJoins;
 
-  /** @var string */
-  private $sequenceName;
-
   /**
    * @param string $name
    */
@@ -39,7 +36,6 @@ class Table
     $this->name         = $name;
     $this->fields       = array();
     $this->primaryKey   = null;
-    $this->sequenceName = null;
   }
 
   /**
@@ -170,21 +166,5 @@ class Table
   public function getPrimaryKey()
   {
     return $this->primaryKey;
-  }
-
-  /**
-   * @param string $sequenceName
-   */
-  public function setSequenceName($sequenceName)
-  {
-    $this->sequenceName = $sequenceName;
-  }
-
-  /**
-   * @return string
-   */
-  public function getSequenceName()
-  {
-    return $this->sequenceName;
   }
 }

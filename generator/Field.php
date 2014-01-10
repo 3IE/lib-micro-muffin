@@ -13,108 +13,108 @@ use Lib\Tools;
 
 class Field
 {
-  /** @var string */
-  private $name;
+    /** @var string */
+    private $name;
 
-  /** @var string */
-  private $type;
+    /** @var string */
+    private $type;
 
-  /** @var string */
-  private $defaultValue;
+    /** @var string */
+    private $defaultValue;
 
-  /** @var bool */
-  private $hasSequence;
+    /** @var string */
+    private $sequence;
 
-  public function __construct($name)
-  {
-    $this->name         = $name;
-    $this->type         = null;
-    $this->defaultValue = null;
-    $this->hasSequence  = false;
-  }
+    public function __construct($name)
+    {
+        $this->name         = $name;
+        $this->type         = null;
+        $this->defaultValue = null;
+        $this->sequence     = null;
+    }
 
-  /**
-   * @return string
-   */
-  public function getCapName()
-  {
-    return Tools::capitalize($this->name);
-  }
+    /**
+     * @return string
+     */
+    public function getCapName()
+    {
+        return Tools::capitalize($this->name);
+    }
 
-  /**
-   * @return string
-   */
-  public function defaultValuetoString()
-  {
-    if (is_null($this->defaultValue))
-      return 'null';
-    else if (is_string($this->defaultValue))
-      return "'$this->defaultValue'";
-    else
-      return $this->defaultValue;
-  }
+    /**
+     * @return string
+     */
+    public function defaultValuetoString()
+    {
+        if (is_null($this->defaultValue))
+            return 'null';
+        else if (is_string($this->defaultValue))
+            return "'$this->defaultValue'";
+        else
+            return $this->defaultValue;
+    }
 
-  /**
-   * @param boolean $hasSequence
-   */
-  public function setHasSequence($hasSequence)
-  {
-    $this->hasSequence = $hasSequence;
-  }
+    /**
+     * @param string $sequence
+     */
+    public function setSequence($sequence)
+    {
+        $this->sequence = $sequence;
+    }
 
-  /**
-   * @return boolean
-   */
-  public function getHasSequence()
-  {
-    return $this->hasSequence;
-  }
+    /**
+     * @return string
+     */
+    public function getSequence()
+    {
+        return $this->sequence;
+    }
 
-  /**
-   * @param string $defaultValue
-   */
-  public function setDefaultValue($defaultValue)
-  {
-    $this->defaultValue = $defaultValue;
-  }
+    /**
+     * @param string $defaultValue
+     */
+    public function setDefaultValue($defaultValue)
+    {
+        $this->defaultValue = $defaultValue;
+    }
 
-  /**
-   * @return string
-   */
-  public function getDefaultValue()
-  {
-    return $this->defaultValue;
-  }
+    /**
+     * @return string
+     */
+    public function getDefaultValue()
+    {
+        return $this->defaultValue;
+    }
 
-  /**
-   * @param string $name
-   */
-  public function setName($name)
-  {
-    $this->name = $name;
-  }
+    /**
+     * @param string $name
+     */
+    public function setName($name)
+    {
+        $this->name = $name;
+    }
 
-  /**
-   * @return string
-   */
-  public function getName()
-  {
-    return $this->name;
-  }
+    /**
+     * @return string
+     */
+    public function getName()
+    {
+        return $this->name;
+    }
 
-  /**
-   * @param string $type
-   */
-  public function setType($type)
-  {
-    $this->type = $type;
-  }
+    /**
+     * @param string $type
+     */
+    public function setType($type)
+    {
+        $this->type = $type;
+    }
 
-  /**
-   * @return string
-   */
-  public function getType()
-  {
-    return $this->type;
-  }
+    /**
+     * @return string
+     */
+    public function getType()
+    {
+        return $this->type;
+    }
 }

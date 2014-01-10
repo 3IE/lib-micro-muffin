@@ -151,6 +151,7 @@ class MicroMuffin
   }
 
   /**
+   * @throws \Exception
    * @return Driver
    */
   public static function getDBDriver()

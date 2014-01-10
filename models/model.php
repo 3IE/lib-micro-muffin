@@ -13,9 +13,8 @@ abstract class Model
   protected static $table_name = null;
   /** @var array */
   protected static $_fields = array();
-
-  /** @var  int */
-  protected $_id = 0;
+  /** @var array */
+  protected static $primary_keys = array();
 
   /**
    * @return string
@@ -23,22 +22,6 @@ abstract class Model
   public static function getTableName()
   {
     return static::$table_name;
-  }
-
-  /**
-   * @return int
-   */
-  public function getId()
-  {
-    return $this->_id;
-  }
-
-  /**
-   * @param int $id
-   */
-  protected function setId($id)
-  {
-    $this->_id = $id;
   }
 
   /**
@@ -59,14 +42,12 @@ abstract class Model
   {
     $attributes       = array();
     $class            = $r->getShortName();
-    $attributes['id'] = $this->_id;
 
     foreach ($r->getProperties() as $att)
     {
       if ($att->class == 'T_' . $class)
       {
         $name = $att->name;
-    //    if ($name[0] == "_" && $name != '_modified')
         if (in_array(substr($name, 1), static::$_fields))
         {
           $property = $r->getProperty($name);

@@ -13,7 +13,7 @@ class Tools
 {
     /**
      * @param string $name
-     * @param null $default
+     * @param null   $default
      * @return mixed
      */
     public static function getParam($name, $default = null)
@@ -92,5 +92,16 @@ class Tools
     public static function stripAccents($stripAccents)
     {
         return strtr($stripAccents, 'àáâãäçèéêëìíîïñòóôõöùúûüýÿÀÁÂÃÄÇÈÉÊËÌÍÎÏÑÒÓÔÕÖÙÚÛÜÝ', 'aaaaaceeeeiiiinooooouuuuyyAAAAACEEEEIIIINOOOOOUUUUY');
+    }
+
+    /**
+     * @param string $str
+     * @return string
+     */
+    public static function removeSFromTableName($str)
+    {
+        if (strtolower($str[strlen($str) - 1]) == 's')
+            $str = substr($str, 0, -1);
+        return $str;
     }
 }

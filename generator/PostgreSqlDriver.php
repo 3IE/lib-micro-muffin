@@ -71,8 +71,7 @@ class PostgreSqlDriver extends Driver
       if (!is_null($f['sequence_name']))
       {
         $array = explode(DBSCHEMA . '.', $f['sequence_name']);
-        $table->setSequenceName($array[1]);
-        $field->setHasSequence(true);
+        $field->setSequence($array[1]);
       }
       $table->addField($field);
     }

@@ -10,240 +10,256 @@
 namespace Lib\Models;
 
 use Lib\EPO;
+use Lib\MicroMuffin;
 use Lib\PDOS;
 use Lib\Tools;
 
 abstract class Writable extends Readable
 {
-  /** @var bool */
-  private $_modified = true;
-  /** @var string|null */
-  protected static $sequence_name = null;
-  /** @var bool */
-  protected $_notInserted = true;
+    /** @var bool */
+    private $_modified = true;
+    /** @var bool */
+    protected $_notInserted = true;
 
-  protected function _objectEdited()
-  {
-    $this->_modified = true;
-  }
-
-  private function _objectNotEdited()
-  {
-    $this->_modified = false;
-    $this->_notInserted = false;
-  }
-
-  public function getModified()
-  {
-    return $this->_modified;
-  }
-
-  /**
-   * @return string
-   */
-  public static function getTableSequenceName()
-  {
-    return static::$sequence_name;
-  }
-
-  /**
-   * Add or update the model in database
-   *
-   * @return void
-   */
-  public function save()
-  {
-    if ($this->_modified)
+    protected function _objectEdited()
     {
-      $reflection = new \ReflectionClass($this);
-      $class      = $reflection->getShortName();
-      $table      = self::$table_name != null ? self::$table_name : strtolower($class) . 's';
+        $this->_modified = true;
+    }
 
-      $attributes = $this->getAttributes($reflection);
+    private function _objectNotEdited()
+    {
+        $this->_modified    = false;
+        $this->_notInserted = false;
+    }
 
-      //Joints model saving
-      $modelAttributes = $this->getModelAttributes($reflection);
-      foreach ($modelAttributes as $model)
-        $model->save();
+    public function getModified()
+    {
+        return $this->_modified;
+    }
 
-      $fields = '(';
-      $values = '(';
-      foreach ($attributes as $k => $v)
-      {
-        if ($k != 'id' || $v != 0)
+    /**
+     * Add or update the model in database
+     *
+     * @return void
+     */
+    public function save()
+    {
+        if ($this->_modified)
         {
-          $fields .= $k . ', ';
-          $values .= ':' . $k . ', ';
+            $reflection = new \ReflectionClass($this);
+            $class      = $reflection->getShortName();
+            $table      = self::$table_name != null ? self::$table_name : strtolower($class) . 's';
+
+            $attributes = $this->getAttributes($reflection);
+
+            //Joints model saving
+            $modelAttributes = $this->getModelAttributes($reflection);
+            foreach ($modelAttributes as $model)
+                $model->save();
+
+            $fields = '(';
+            $values = '(';
+            foreach ($attributes as $k => $v)
+            {
+                if ($k != 'id' || $v != 0)
+                {
+                    $fields .= $k . ', ';
+                    $values .= ':' . $k . ', ';
+                }
+            }
+            $fields = substr($fields, 0, -2) . ')';
+            $values = substr($values, 0, -2) . ')';
+
+            $pdo = PDOS::getInstance();
+
+            if ($this->_notInserted)
+                $this->add($pdo, $table, $fields, $values, $attributes);
+            else
+                $this->update();
         }
-      }
-      $fields = substr($fields, 0, -2) . ')';
-      $values = substr($values, 0, -2) . ')';
-
-      $pdo = PDOS::getInstance();
-
-      if ($this->_notInserted)
-        $this->add($pdo, $table, $fields, $values, $attributes);
-      else
-        $this->update();
     }
-  }
 
-  /**
-   * @param self[] $objects
-   */
-  public static function saveAll(Array $objects)
-  {
-    if (count($objects) == 0)
-      return;
-
-    /** @var self $class */
-    $class        = '\\' . get_called_class();
-    $table        = $class::getTableName();
-    $attributes   = $objects[0]->getAttributes(new \ReflectionClass($objects[0]));
-    $nbColumns    = count($attributes);
-    $nbTotalRows  = count($objects);
-    $rowsByInsert = 0;
-
-    /* Building attribute => getter list */
-    $attrGetter = array();
-    $fields     = '(';
-    foreach ($attributes as $k => $v)
+    private function update()
     {
-      if ($k != 'id' || $v != 0)
-      {
-        $attrGetter[$k] = 'get' . Tools::capitalize($k);
-        $fields .= $k . ', ';
-      }
-    }
-    $fields = substr($fields, 0, -2) . ')';
-    unset($attributes);
+        $sql        = 'UPDATE ' . static::$table_name . ' SET ';
+        $set        = '';
+        $where      = '';
+        $attributes = $this->getAttributes(new \ReflectionClass($this));
 
-    /* Depending of how many columns we have to insert, we don't put the same rows number in a single query */
-    if ($nbColumns > 0 && $nbColumns <= 4)
-      $rowsByInsert = 50;
-    else if ($nbColumns <= 10)
-      $rowsByInsert = 10;
-    else
-      $rowsByInsert = 2;
+        foreach ($attributes as $k => $v)
+            if (!in_array($k, static::$primary_keys))
+                $set .= $k . ' = :' . $k . ', ';
 
-    $rowsInPartialInsert = $nbTotalRows % $rowsByInsert;
+        foreach (static::$primary_keys as $pk)
+            $where .= $pk . ' = :' . $pk . ' AND ';
 
-    /* Constructing queries, one for a full insertion, one for remaining rows that cannont fill a full insert */
-    $pdo        = PDOS::getInstance();
-    $sql        = 'INSERT INTO ' . $table . ' ' . $fields . ' VALUES ';
-    $sqlValues1 = '';
-    $sqlValues2 = '';
-    for ($i = 0; $i < $rowsByInsert; $i++)
-    {
-      $sqlValues1 .= '(';
-      if ($i < $rowsInPartialInsert)
-        $sqlValues2 .= '(';
-      foreach ($attrGetter as $k => $v)
-      {
-        $sqlValues1 .= ':' . $k . '_' . $i . ', ';
-        if ($i < $rowsInPartialInsert)
-          $sqlValues2 .= ':' . $k . '_' . $i . ', ';
-      }
-      $sqlValues1 = substr($sqlValues1, 0, -2) . '), ';
-      if ($i < $rowsInPartialInsert)
-        $sqlValues2 = substr($sqlValues2, 0, -2) . '), ';
-    }
-    $sqlValues1 = substr($sqlValues1, 0, -2);
-    $sqlValues2 = substr($sqlValues2, 0, -2);
+        $where = substr($where, 0, -5);
+        $set   = substr($set, 0, -2);
+        $sql .= $set . ' WHERE ' . $where;
 
-    $queryFull = $pdo->prepare($sql . $sqlValues1);
-    if ($rowsInPartialInsert > 0)
-      $queryPartial = $pdo->prepare($sql . $sqlValues2);
-    else
-      $queryPartial = null;
-
-    /* Executing loop, filling values and executing queries */
-    $nbFullInserts = (int)($nbTotalRows / $rowsByInsert);
-
-    $reflection = new \ReflectionClass(get_called_class());
-
-    $pdo->beginTransaction();
-
-    $i = 0;
-    for ($j = 0; $j < $nbFullInserts; $j++)
-    {
-      for ($k = 0; $k < $rowsByInsert; $k++)
-      {
-        $object = $objects[$i];
-        foreach ($attrGetter as $attr => $getter)
+        $pdo   = PDOS::getInstance();
+        $query = $pdo->prepare($sql);
+        foreach ($attributes as $k => $v)
         {
-          $method = $reflection->getMethod($getter);
-          if ($method->isPrivate())
-          {
-            $property = $reflection->getProperty('_' . $attr);
-            $property->setAccessible(true);
-            $val = $property->getValue($object);
-            $property->setAccessible(false);
-          }
-          else
-            $val = $object->$getter();
-          $queryFull->bindValue(':' . $attr . '_' . $k, is_bool($val) ? ($val ? 'true' : 'false') : $val);
+            $driver = MicroMuffin::getDBDriver();
+            $driver->bindPDOValue($query, ':' . $k, $v);
         }
-        $i++;
-      }
-      $queryFull->execute();
+        $query->execute();
     }
-    if ($rowsInPartialInsert > 0)
+
+    /**
+     * @param self[] $objects
+     */
+    public static function saveAll(Array $objects)
     {
-      for ($k = 0; $k < $rowsInPartialInsert; $k++)
-      {
-        $object = $objects[$i];
-        foreach ($attrGetter as $attr => $getter)
+        if (count($objects) == 0)
+            return;
+
+        /** @var self $class */
+        $class        = '\\' . get_called_class();
+        $table        = $class::getTableName();
+        $attributes   = $objects[0]->getAttributes(new \ReflectionClass($objects[0]));
+        $nbColumns    = count($attributes);
+        $nbTotalRows  = count($objects);
+        $rowsByInsert = 0;
+
+        /* Building attribute => getter list */
+        $attrGetter = array();
+        $fields     = '(';
+        foreach ($attributes as $k => $v)
         {
-          $method = $reflection->getMethod($getter);
-          if ($method->isPrivate())
-          {
-            $property = $reflection->getProperty('_' . $attr);
-            $property->setAccessible(true);
-            $val = $property->getValue($object);
-            $property->setAccessible(false);
-          }
-          else
-            $val = $object->$getter();
-          $queryPartial->bindValue(':' . $attr . '_' . $k, is_bool($val) ? ($val ? 'true' : 'false') : $val);
+            if ($k != 'id' || $v != 0)
+            {
+                $attrGetter[$k] = 'get' . Tools::capitalize($k);
+                $fields .= $k . ', ';
+            }
         }
-        $i++;
-      }
-      $queryPartial->execute();
-    }
+        $fields = substr($fields, 0, -2) . ')';
+        unset($attributes);
 
-    $pdo->commit();
-  }
-
-  /**
-   * @param \Lib\EPO $pdo
-   * @param $table
-   * @param string $fields
-   * @param string $values
-   * @param array $attributes
-   */
-  private function add(EPO $pdo, $table, $fields, $values, Array $attributes)
-  {
-    $query = 'INSERT INTO ' . $table . ' ' . $fields . ' VALUES ' . $values;
-
-    $pdo->beginTransaction();
-    $query = $pdo->prepare($query);
-    foreach ($attributes as $k => $v)
-    {
-      if ($k != 'id' || $v != 0)
-      {
-        if (is_bool($v))
-          $query->bindValue(':' . $k, $v, \PDO::PARAM_BOOL);
+        /* Depending of how many columns we have to insert, we don't put the same rows number in a single query */
+        if ($nbColumns > 0 && $nbColumns <= 4)
+            $rowsByInsert = 50;
+        else if ($nbColumns <= 10)
+            $rowsByInsert = 10;
         else
-          $query->bindValue(':' . $k, $v);
-      }
-    }
-    $query->execute();
-      if ($this->getId() == 0)
-        $this->setId($pdo->lastInsertId(static::$sequence_name));
-    $pdo->commit();
-    $this->_notInserted = false;
-  }
+            $rowsByInsert = 2;
 
-  protected abstract function update();
+        $rowsInPartialInsert = $nbTotalRows % $rowsByInsert;
+
+        /* Constructing queries, one for a full insertion, one for remaining rows that cannont fill a full insert */
+        $pdo        = PDOS::getInstance();
+        $sql        = 'INSERT INTO ' . $table . ' ' . $fields . ' VALUES ';
+        $sqlValues1 = '';
+        $sqlValues2 = '';
+        for ($i = 0; $i < $rowsByInsert; $i++)
+        {
+            $sqlValues1 .= '(';
+            if ($i < $rowsInPartialInsert)
+                $sqlValues2 .= '(';
+            foreach ($attrGetter as $k => $v)
+            {
+                $sqlValues1 .= ':' . $k . '_' . $i . ', ';
+                if ($i < $rowsInPartialInsert)
+                    $sqlValues2 .= ':' . $k . '_' . $i . ', ';
+            }
+            $sqlValues1 = substr($sqlValues1, 0, -2) . '), ';
+            if ($i < $rowsInPartialInsert)
+                $sqlValues2 = substr($sqlValues2, 0, -2) . '), ';
+        }
+        $sqlValues1 = substr($sqlValues1, 0, -2);
+        $sqlValues2 = substr($sqlValues2, 0, -2);
+
+        $queryFull = $pdo->prepare($sql . $sqlValues1);
+        if ($rowsInPartialInsert > 0)
+            $queryPartial = $pdo->prepare($sql . $sqlValues2);
+        else
+            $queryPartial = null;
+
+        /* Executing loop, filling values and executing queries */
+        $nbFullInserts = (int)($nbTotalRows / $rowsByInsert);
+
+        $reflection = new \ReflectionClass(get_called_class());
+
+        $pdo->beginTransaction();
+
+        $i = 0;
+        for ($j = 0; $j < $nbFullInserts; $j++)
+        {
+            for ($k = 0; $k < $rowsByInsert; $k++)
+            {
+                $object = $objects[$i];
+                foreach ($attrGetter as $attr => $getter)
+                {
+                    $method = $reflection->getMethod($getter);
+                    if ($method->isPrivate())
+                    {
+                        $property = $reflection->getProperty('_' . $attr);
+                        $property->setAccessible(true);
+                        $val = $property->getValue($object);
+                        $property->setAccessible(false);
+                    }
+                    else
+                        $val = $object->$getter();
+                    $queryFull->bindValue(':' . $attr . '_' . $k, is_bool($val) ? ($val ? 'true' : 'false') : $val);
+                }
+                $i++;
+            }
+            $queryFull->execute();
+        }
+        if ($rowsInPartialInsert > 0)
+        {
+            for ($k = 0; $k < $rowsInPartialInsert; $k++)
+            {
+                $object = $objects[$i];
+                foreach ($attrGetter as $attr => $getter)
+                {
+                    $method = $reflection->getMethod($getter);
+                    if ($method->isPrivate())
+                    {
+                        $property = $reflection->getProperty('_' . $attr);
+                        $property->setAccessible(true);
+                        $val = $property->getValue($object);
+                        $property->setAccessible(false);
+                    }
+                    else
+                        $val = $object->$getter();
+                    $queryPartial->bindValue(':' . $attr . '_' . $k, is_bool($val) ? ($val ? 'true' : 'false') : $val);
+                }
+                $i++;
+            }
+            $queryPartial->execute();
+        }
+
+        $pdo->commit();
+    }
+
+    /**
+     * @param \Lib\EPO $pdo
+     * @param          $table
+     * @param string   $fields
+     * @param string   $values
+     * @param array    $attributes
+     */
+    private function add(EPO $pdo, $table, $fields, $values, Array $attributes)
+    {
+        $query = 'INSERT INTO ' . $table . ' ' . $fields . ' VALUES ' . $values;
+
+        $query = $pdo->prepare($query);
+        foreach ($attributes as $k => $v)
+        {
+            if ($k != 'id' || $v != 0)
+            {
+                if (is_bool($v))
+                    $query->bindValue(':' . $k, $v, \PDO::PARAM_BOOL);
+                else
+                    $query->bindValue(':' . $k, $v);
+            }
+        }
+        $query->execute();
+        $this->fillSequencedAttributes($pdo);
+        $this->_notInserted = false;
+    }
+
+    protected abstract function fillSequencedAttributes(EPO $pdo);
 }

@@ -25,14 +25,12 @@ abstract class Readable extends Model
   protected static $procstock_count = null;
   /** @var string|null */
   protected static $procstock_take = null;
-  /** @var array */
-  protected static $primary_keys = array();
 
   /**
    * Find all models in database
    *
    * @param array|string $order
-   * @return self[]
+   * @return static[]
    */
   public static function all($order = null)
   {
