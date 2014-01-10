@@ -19,6 +19,8 @@ abstract class Writable extends Readable
   private $_modified = true;
   /** @var string|null */
   protected static $sequence_name = null;
+  /** @var bool */
+  protected $_notInserted = true;
 
   protected function _objectEdited()
   {
@@ -28,6 +30,7 @@ abstract class Writable extends Readable
   private function _objectNotEdited()
   {
     $this->_modified = false;
+    $this->_notInserted = false;
   }
 
   public function getModified()
@@ -67,7 +70,7 @@ abstract class Writable extends Readable
       $values = '(';
       foreach ($attributes as $k => $v)
       {
-        if ($k != 'id')
+        if ($k != 'id' || $v != 0)
         {
           $fields .= $k . ', ';
           $values .= ':' . $k . ', ';
@@ -78,7 +81,7 @@ abstract class Writable extends Readable
 
       $pdo = PDOS::getInstance();
 
-      if ($this->_id == 0)
+      if ($this->_notInserted)
         $this->add($pdo, $table, $fields, $values, $attributes);
       else
         $this->update();
@@ -227,7 +230,7 @@ abstract class Writable extends Readable
     $query = $pdo->prepare($query);
     foreach ($attributes as $k => $v)
     {
-      if ($k != 'id')
+      if ($k != 'id' || $v != 0)
       {
         if (is_bool($v))
           $query->bindValue(':' . $k, $v, \PDO::PARAM_BOOL);
@@ -236,8 +239,10 @@ abstract class Writable extends Readable
       }
     }
     $query->execute();
-    $this->setId($pdo->lastInsertId(static::$sequence_name));
+      if ($this->getId() == 0)
+        $this->setId($pdo->lastInsertId(static::$sequence_name));
     $pdo->commit();
+    $this->_notInserted = false;
   }
 
   protected abstract function update();

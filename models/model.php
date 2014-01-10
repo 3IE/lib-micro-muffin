@@ -11,6 +11,9 @@ abstract class Model
 {
   /** @var string|null */
   protected static $table_name = null;
+  /** @var array */
+  protected static $_fields = array();
+
   /** @var  int */
   protected $_id = 0;
 
@@ -63,7 +66,8 @@ abstract class Model
       if ($att->class == 'T_' . $class)
       {
         $name = $att->name;
-        if ($name[0] == "_" && $name != '_modified')
+    //    if ($name[0] == "_" && $name != '_modified')
+        if (in_array(substr($name, 1), static::$_fields))
         {
           $property = $r->getProperty($name);
           $property->setAccessible(true);

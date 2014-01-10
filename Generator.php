@@ -56,6 +56,9 @@ class Generator
   /** @var array */
   private $primaryKeys;
 
+  /** @var array */
+  private $tables;
+
   private function __construct()
   {
     $this->tablesFields   = array();
@@ -332,7 +335,7 @@ class Generator
     $str .= TAB . TAB . "\$where      = '';\n";
     $str .= TAB . TAB . "\$attributes = \$this->getAttributes(new \\ReflectionClass(\$this));\n";
     $str .= TAB . TAB . "foreach (\$attributes as \$k => \$v)\n";
-    $str .= TAB . TAB . TAB . "if (!in_array(\$k, self::\$primary_keys))\n";
+    $str .= TAB . TAB . TAB . "if (!in_array(\$k, self::\$primary_keys) && in_array(\$k, self::\$_fields))\n";
     $str .= TAB . TAB . TAB . TAB . "\$set .= \$k . ' = :' . \$k . ', ';\n";
     $str .= TAB . TAB . "foreach (self::\$primary_keys as \$pk)\n";
     $str .= TAB . TAB . TAB . "\$where .= \$pk . ' = :' . \$pk . ' AND ';\n";
@@ -343,7 +346,8 @@ class Generator
     $str .= TAB . TAB . "\$pdo->beginTransaction();\n";
     $str .= TAB . TAB . "\$query = \$pdo->prepare(\$sql);\n";
     $str .= TAB . TAB . "foreach(\$attributes as \$k => \$v)\n";
-    $str .= TAB . TAB . TAB . "\$query->bindValue(':' . \$k, is_bool(\$v) ? (\$v ? 'true' : 'false') : \$v);\n";
+    $str .= TAB . TAB . TAB . "if (in_array(\$k, self::\$_fields))\n";
+    $str .= TAB . TAB . TAB . TAB . "\$query->bindValue(':' . \$k, is_bool(\$v) ? (\$v ? 'true' : 'false') : \$v);\n";
     $str .= TAB . TAB . "\$query->execute();\n";
     $str .= TAB . TAB . "\$pdo->commit();\n";
     $str .= TAB . "}\n\n";
@@ -461,11 +465,25 @@ class Generator
       if ($this->haveSequence($originalTableName))
         fwrite($file, TAB . "protected static \$sequence_name = '" . $sequences[$tableName] . "';\n");
 
+      $sFieldsList  = '';
       $primary_keys = "protected static \$primary_keys = array(";
+      $aPk = array();
       foreach ($this->primaryKeys[$originalTableName] as $pk)
+      {
+        $aPk[] = $pk['name'];
         $primary_keys .= "'" . $pk['name'] . "', ";
+        $sFieldsList .= "'" . $pk['name'] . "', ";
+      }
       $primary_keys = substr($primary_keys, 0, -2) . ');';
       fwrite($file, TAB . $primary_keys . "\n");
+
+      foreach ($fields as $f)
+      {
+        if (!in_array($f, $aPk))
+          $sFieldsList .= "'$f', ";
+      }
+      $sFieldsList = substr($sFieldsList, 0, -2);
+      fwrite($file, TAB . "protected static \$_fields = array($sFieldsList);\n");
 
       fwrite($file, "\n");
 
@@ -495,7 +513,7 @@ class Generator
       fwrite($file, "}\n");
       fclose($file);
 
-      chmod($filename, RO_CHMOD);
+      chmod($filename, W_CHMOD);
     }
   }
 
@@ -717,7 +735,9 @@ class Generator
 
       //Execute function
       $buffer .= TAB . "/**\n";
-      if ($sp['return_type'] != 'record')
+      if (in_array($sp['return_type'], $this->tables))
+        $buffer .= TAB . " * @return ". Tools::capitalize($this->removeSFromTableName($sp['return_type'])). "[]\n";
+      else if ($sp['return_type'] != 'record')
         $buffer .= TAB . " * @return array\n";
       else
         $buffer .= TAB . " * @return " . $className . "[]\n";
@@ -729,11 +749,14 @@ class Generator
       $buffer .= TAB . TAB . "\$query->execute();\n";
       $buffer .= TAB . TAB . "\$res = array();\n";
 
-      if ($sp['return_type'] == 'record')
+      if ($sp['return_type'] == 'record' || in_array($sp['return_type'], $this->tables))
       {
         $buffer .= TAB . TAB . "foreach(\$query->fetchAll() as \$v)\n";
         $buffer .= TAB . TAB . "{\n";
-        $buffer .= TAB . TAB . TAB . "\$obj = new " . $className . "();\n";
+        if (in_array($sp['return_type'], $this->tables))
+            $buffer .= TAB . TAB . TAB . "\$obj = new " . Tools::capitalize($this->removeSFromTableName($sp['return_type'])) . "();\n";
+        else
+          $buffer .= TAB . TAB . TAB . "\$obj = new " . $className . "();\n";
         $buffer .= TAB . TAB . TAB . "self::hydrate(\$obj, \$v);\n";
         $buffer .= TAB . TAB . TAB . "\$res[] = \$obj;\n";
         $buffer .= TAB . TAB . "}\n";
@@ -752,7 +775,7 @@ class Generator
       fwrite($file, $buffer);
       fclose($file);
 
-      chmod($filepath, RO_CHMOD);
+      chmod($filepath, W_CHMOD);
       $this->writeLine(" " . $className . " model written");
     }
   }
@@ -967,6 +990,8 @@ class Generator
     //Foreach table, generates both T_Model and Model
     foreach ($tables as $table)
     {
+      $this->tables[] = $table;
+
       $fields            = $tables_fields[$table];
       $originalTableName = $table;
 
