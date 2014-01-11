@@ -16,6 +16,9 @@ class AbstractSchema
     /** @var Table[] */
     private $tables;
 
+    /** @var StoredProcedure[] */
+    private $storedProcedures;
+
     /** @var \Twig_Environment */
     private $twig;
 
@@ -27,6 +30,22 @@ class AbstractSchema
         $this->tables = array();
         $this->twig   = null;
         $this->driver = $driver;
+    }
+
+    /**
+     * @param \Lib\Generator\StoredProcedure[] $storedProcedures
+     */
+    public function setStoredProcedures($storedProcedures)
+    {
+        $this->storedProcedures = $storedProcedures;
+    }
+
+    /**
+     * @return \Lib\Generator\StoredProcedure[]
+     */
+    public function getStoredProcedures()
+    {
+        return $this->storedProcedures;
     }
 
     /**
@@ -60,13 +79,27 @@ class AbstractSchema
 
         $this->writeT_Models();
         $this->writeModels();
+        $this->writeSPModels();
+    }
+
+    private function writeSPModels()
+    {
+        $save_dir = __DIR__ . '/tmp/';
+        foreach ($this->storedProcedures as $sp)
+        {
+            $fileName = 'sp_' . $sp->getName() . '.php';
+
+            $file = fopen($save_dir . $fileName, "w");
+            fwrite($file, $this->SP_ModelToString($sp));
+            fclose($file);
+        }
     }
 
     private function writeModels()
     {
+        $save_dir = __DIR__ . '/tmp/';
         foreach ($this->tables as $table)
         {
-            $save_dir = __DIR__ . '/tmp/';
             $fileName = '' . Tools::removeSFromTableName($table->getName()) . '.php';
 
             $file = fopen($save_dir . $fileName, "w");
@@ -77,9 +110,9 @@ class AbstractSchema
 
     private function writeT_Models()
     {
+        $save_dir = __DIR__ . '/tmp/';
         foreach ($this->tables as $table)
         {
-            $save_dir = __DIR__ . '/tmp/';
             $fileName = 't_' . Tools::removeSFromTableName($table->getName()) . '.php';
 
             $file = fopen($save_dir . $fileName, "w");
@@ -88,8 +121,28 @@ class AbstractSchema
         }
     }
 
+    private function SP_ModelToString(StoredProcedure $sp)
+    {
+        $variables = array();
+
+        $variables['className']  = $sp->getClassName();
+        $variables['modelClass'] = '\\Lib\\Models\\Model';
+        $variables['name']       = $sp->getName();
+        $variables['returnType'] = $sp->getCleanReturnType();
+
+        if ($sp instanceof ScalarStoredProcedure)
+            $variables['fetchMode'] = 'PDO::FETCH_COLUMN';
+        else
+            $variables['fetchMode'] = '';
+
+        //TODO : proto and sp params. Out params binding to attributes for record sp
+
+        return $this->twig->render('sp_model.php.twig', $variables);
+    }
+
     private function ModelToString(Table $table)
     {
+        $variables              = array();
         $variables['className'] = $table->getClassName();
 
         return $this->twig->render('model.php.twig', $variables);
@@ -124,7 +177,7 @@ class AbstractSchema
                 $cleanName = $o->getTargetField();
                 if (substr($cleanName, strlen($cleanName) - 3) == '_id')
                     $cleanName = substr($cleanName, 0, -3);
-                else if (substr($cleanName, strlen($cleanName) - 2 == 'Id'))
+                else if (substr($cleanName, strlen($cleanName) - 2) == 'Id')
                     $cleanName = substr($cleanName, 0, -2);
                 $cleanName = strtolower($cleanName);
 

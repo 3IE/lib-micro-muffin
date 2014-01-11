@@ -1,0 +1,22 @@
+<?php
+class {{ className }} extends {{ modelClass }}
+{
+  /**
+   * @return {{ returnType }}
+   */
+  public static function execute({{ executeProtoParams }})
+  {
+    $pdo   = \Lib\PDOS::getInstance();
+    $query = $pdo->prepare('SELECT * FROM {{ name }}({{ spParams }})');
+
+    $query->execute();
+    $res = array();
+
+    foreach ($query->fetchAll({{ fetchMode }}) as $v)
+    {
+      $res[] = $v;
+    }
+
+    return $res;
+  }
+}

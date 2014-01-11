@@ -27,8 +27,8 @@ class Generator
     $driver = MicroMuffin::getDBDriver();
     $schema = $driver->getAbstractSchema();
 
-    //r($schema);
+    //var_dump($schema);
 
-    $schema->writeFiles();
+    //$schema->writeFiles();
   }
 }
