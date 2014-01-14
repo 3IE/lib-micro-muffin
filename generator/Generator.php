@@ -13,22 +13,42 @@ use Lib\MicroMuffin;
 
 class Generator
 {
-  private static function init()
-  {
-    require_once(__DIR__ . '/../autoloader.php');
-    require_once(__DIR__ . '/../config.php');
-    require_once(__DIR__ . '/../../config/config.php');
-  }
+    const RELATIVE_MODEL_SAVE_DIR    = '/../../app/model/';
+    const RELATIVE_T_MODEL_SAVE_DIR  = '/../../app/t_model/';
+    const RELATIVE_SP_MODEL_SAVE_DIR = '/../../app/sp_model/';
+    const W_CHMOD                    = 640;
 
-  public static function run()
-  {
-    self::init();
+    private static function init()
+    {
+        require_once(__DIR__ . '/../autoloader.php');
+        require_once(__DIR__ . '/../config.php');
+        require_once(__DIR__ . '/../../config/config.php');
+    }
 
-    $driver = MicroMuffin::getDBDriver();
-    $schema = $driver->getAbstractSchema();
+    private static function emptyDirectory($dirName)
+    {
+        /** @var $file \DirectoryIterator */
+        foreach (new \DirectoryIterator($dirName) as $file)
+        {
+            if (!$file->isDot() && $file->getFilename() != 'empty')
+            {
+                chmod($file->getPathname(), self::W_CHMOD);
+                unlink($file->getPathname());
+            }
+        }
+    }
 
-    //var_dump($schema);
+    public static function run()
+    {
+        self::init();
+        self::emptyDirectory(__DIR__ . self::RELATIVE_T_MODEL_SAVE_DIR);
+        self::emptyDirectory(__DIR__ . self::RELATIVE_SP_MODEL_SAVE_DIR);
 
-    $schema->writeFiles();
-  }
+        $driver = MicroMuffin::getDBDriver();
+        $schema = $driver->getAbstractSchema();
+
+        //var_dump($schema);
+
+        $schema->writeFiles();
+    }
 }

@@ -9,7 +9,7 @@
 
 namespace Lib\Generator;
 
-use Lib\MicroMuffin;
+use Lib\Generator\Generator;
 use Lib\Tools;
 
 class AbstractSchema
@@ -85,7 +85,7 @@ class AbstractSchema
 
     private function writeSPModels()
     {
-        $save_dir = __DIR__ . '/tmp/';
+        $save_dir = __DIR__ . Generator::RELATIVE_SP_MODEL_SAVE_DIR;
         foreach ($this->storedProcedures as $sp)
         {
             $fileName = $sp->getName() . '.php';
@@ -98,7 +98,7 @@ class AbstractSchema
 
     private function writeModels()
     {
-        $save_dir = __DIR__ . '/tmp/';
+        $save_dir = __DIR__ . Generator::RELATIVE_MODEL_SAVE_DIR;
         foreach ($this->tables as $table)
         {
             $fileName = '' . Tools::removeSFromTableName($table->getName()) . '.php';
@@ -111,7 +111,7 @@ class AbstractSchema
 
     private function writeT_Models()
     {
-        $save_dir = __DIR__ . '/tmp/';
+        $save_dir = __DIR__ . Generator::RELATIVE_T_MODEL_SAVE_DIR;
         foreach ($this->tables as $table)
         {
             $fileName = 't_' . Tools::removeSFromTableName($table->getName()) . '.php';
@@ -131,12 +131,6 @@ class AbstractSchema
         $variables['name']       = $sp->getName();
         $variables['returnType'] = $sp->getCleanReturnType();
 
-        if ($sp instanceof ScalarStoredProcedure)
-            $variables['fetchMode'] = 'PDO::FETCH_COLUMN';
-        else
-            $variables['fetchMode'] = '';
-
-        //TODO : proto and sp params. Out params binding to attributes for record sp
         $protoParams   = '';
         $executeParams = '';
         $aINParameters = $sp->getINParameters();
@@ -153,9 +147,11 @@ class AbstractSchema
         if ($sp instanceof ScalarStoredProcedure)
         {
             $variables['objectHydratation'] = false;
+            $variables['fetchMode']         = 'PDO::FETCH_COLUMN';
         }
         else
         {
+            $variables['fetchMode']         = '';
             $variables['objectHydratation'] = true;
             /** @var $sp ISPReturnClass */
             $variables['targetClass'] = $sp->getReturnedClassName();
@@ -164,7 +160,7 @@ class AbstractSchema
             if ($sp instanceof RecordStoredProcedure)
             {
                 $variables['hasAttributes'] = true;
-                $variables['attributes'] = $sp->getOUParameters();
+                $variables['attributes']    = $sp->getOUParameters();
             }
         }
         return $this->twig->render('sp_model.php.twig', $variables);
@@ -246,7 +242,7 @@ class AbstractSchema
     }
 
     /**
-     * @param Field[] $fields
+     * @param Field[]     $fields
      * @param ManyToOne[] $mto
      * @return Field[]
      */
