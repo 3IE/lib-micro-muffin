@@ -37,7 +37,7 @@ abstract class StoredProcedure
      */
     public function getClassName()
     {
-        return 'SP_' . Tools::capitalize($this->name);
+        return Tools::capitalize($this->name, 4);
     }
 
     /**
@@ -92,4 +92,60 @@ abstract class StoredProcedure
      * @return string
      */
     public abstract function getCleanReturnType();
+
+    /**
+     * @return SPParameter[]
+     */
+    public function getINParameters()
+    {
+        $aINParameters = array();
+        foreach ($this->parameters as $parameter)
+        {
+            if ($parameter->getMode() == SPParameter::PARAMETER_IN_MODE ||
+                $parameter->getMode() == SPParameter::PARAMETER_INOUT_MODE
+            )
+            {
+                $aINParameters[] = $parameter;
+            }
+        }
+
+        usort($aINParameters, function ($paramA, $paramB)
+        {
+            /** @var $paramA SPParameter */
+            /** @var $paramB SPParameter */
+            if ($paramA->getPosition() == $paramB->getPosition())
+                return 0;
+            return $paramA->getPosition() > $paramB->getPosition() ? 1 : -1;
+        });
+
+        return $aINParameters;
+    }
+
+    /**
+     * @return SPParameter[]
+     */
+    public function getOUParameters()
+    {
+        $aOUTParameters = array();
+        foreach ($this->parameters as $parameter)
+        {
+            if ($parameter->getMode() == SPParameter::PARAMETER_OUT_MODE ||
+                $parameter->getMode() == SPParameter::PARAMETER_INOUT_MODE
+            )
+            {
+                $aOUTParameters[] = $parameter;
+            }
+        }
+
+        usort($aOUTParameters, function ($paramA, $paramB)
+        {
+            /** @var $paramA SPParameter */
+            /** @var $paramB SPParameter */
+            if ($paramA->getPosition() == $paramB->getPosition())
+                return 0;
+            return $paramA->getPosition() > $paramB->getPosition() ? 1 : -1;
+        });
+
+        return $aOUTParameters;
+    }
 }

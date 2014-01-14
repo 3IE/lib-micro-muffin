@@ -29,6 +29,6 @@ class Generator
 
     //var_dump($schema);
 
-    //$schema->writeFiles();
+    $schema->writeFiles();
   }
 }

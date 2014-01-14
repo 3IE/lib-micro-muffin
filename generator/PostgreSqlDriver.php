@@ -295,4 +295,19 @@ class PostgreSqlDriver extends Driver
 
         return $aStoredProcedures;
     }
+
+    /**
+     * @param string $str
+     * @return bool
+     */
+    public static function isTypeString($str)
+    {
+        $stringType = array(
+            'character varying',
+            'character',
+            'text'
+        );
+
+        return in_array($str, $stringType);
+    }
 }

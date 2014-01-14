@@ -8,6 +8,8 @@
 
 namespace Lib\Generator;
 
+use Lib\MicroMuffin;
+
 class SPParameter
 {
     const PARAMETER_IN_MODE    = 'IN';
@@ -41,6 +43,14 @@ class SPParameter
                 $this->mode = self::PARAMETER_IN_MODE;
                 break;
         }
+    }
+
+    /**
+     * @return bool
+     */
+    public function isStringType()
+    {
+        return MicroMuffin::getDBDriver()->isTypeString($this->type);
     }
 
     /**
@@ -106,5 +116,4 @@ class SPParameter
     {
         return $this->type;
     }
-
 } 

@@ -9,24 +9,24 @@
 
 namespace Lib\Generator;
 
-abstract class Driver implements IParamBindable
+abstract class Driver implements IParamBindable, IDriveHasTypeString
 {
-  /** @var AbstractSchema */
-  protected $abstractSchema;
+    /** @var AbstractSchema */
+    protected $abstractSchema;
 
-  protected abstract function readDatabaseSchema();
+    protected abstract function readDatabaseSchema();
 
-  public abstract function writeFindProcedure(Table $table);
+    public abstract function writeFindProcedure(Table $table);
 
-  public abstract function writeOneToManyProcedure($foreignTable, $foreignColumn, $foreignColumnClean, $tableName, $columnType);
+    public abstract function writeOneToManyProcedure($foreignTable, $foreignColumn, $foreignColumnClean, $tableName, $columnType);
 
-  /**
-   * @return AbstractSchema
-   */
-  public function getAbstractSchema()
-  {
-    $this->readDatabaseSchema();
+    /**
+     * @return AbstractSchema
+     */
+    public function getAbstractSchema()
+    {
+        $this->readDatabaseSchema();
 
-    return $this->abstractSchema;
-  }
+        return $this->abstractSchema;
+    }
 }

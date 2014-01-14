@@ -8,7 +8,7 @@
 
 namespace Lib\Generator;
 
-class RecordStoredProcedure extends StoredProcedure
+class RecordStoredProcedure extends StoredProcedure implements ISPReturnClass
 {
 
     /**
@@ -16,6 +16,11 @@ class RecordStoredProcedure extends StoredProcedure
      */
     public function getCleanReturnType()
     {
-        return $this->getClassName() . '[]';
+        return $this->getReturnedClassName() . '[]';
+    }
+
+    public function getReturnedClassName()
+    {
+        return $this->getClassName();
     }
 }

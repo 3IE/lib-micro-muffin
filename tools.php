@@ -23,13 +23,16 @@ class Tools
 
     /**
      * @param string $str
+     * @param int    $nbChars
      * @return string
      */
-    public static function capitalize($str)
+    public static function capitalize($str, $nbChars = 1)
     {
-        $up    = $str;
-        $up[0] = strtoupper($up[0]);
-        return $up;
+        for ($i = 0; $i < $nbChars; $i++)
+        {
+            $str[$i] = strtoupper($str[$i]);
+        }
+        return $str;
     }
 
     /**

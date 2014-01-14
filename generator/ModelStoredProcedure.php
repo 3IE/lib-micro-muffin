@@ -10,13 +10,21 @@ namespace Lib\Generator;
 
 use Lib\Tools;
 
-class ModelStoredProcedure extends StoredProcedure
+class ModelStoredProcedure extends StoredProcedure implements ISPReturnClass
 {
     /**
      * @return string
      */
     public function getCleanReturnType()
     {
-        return Tools::capitalize(Tools::removeSFromTableName($this->returnType)) . '[]';
+        return $this->getReturnedClassName()  . '[]';
+    }
+
+    /**
+     * @return string
+     */
+    public function getReturnedClassName()
+    {
+        return Tools::capitalize(Tools::removeSFromTableName($this->returnType));
     }
 }
