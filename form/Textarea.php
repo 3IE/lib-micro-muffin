@@ -56,12 +56,14 @@ class Textarea extends Field
     return $this;
   }
 
-  /**
-   * @param string $s
-   */
+    /**
+     * @param string $s
+     * @return $this
+     */
   public function setPlaceholder($s)
   {
     $this->placeholder = $s;
+    return $this;
   }
 
   /**
