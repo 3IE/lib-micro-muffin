@@ -15,6 +15,7 @@ class PDOS
     private static $instance_;
 
     /**
+     * @throws \Exception
      * @return EPO
      */
     public static function getInstance()
@@ -32,8 +33,8 @@ class PDOS
 
             } catch (\PDOException $e)
             {
-                echo 'Erreur : ' . $e->getMessage() . '<br />';
-                echo 'N° : ' . $e->getCode() . '<br />';
+                $error  = 'Error : ' . $e->getMessage() ;
+                throw new \Exception($error);
             }
         }
         return self::$instance_;

@@ -238,6 +238,14 @@ class AbstractSchema
         $variables['pkFields']          = $table->getPrimaryKey()->getFields();
         $variables['findProcedureName'] = $this->driver->writeFindProcedure($table);
 
+        $str = '';
+        foreach ($table->getFields() as $field)
+        {
+            if (!is_null($field->getSequence()))
+                $str .= '\''.$field->getName().'\' => \''.$field->getSequence().'\', ';
+        }
+        $variables['sequencesArray'] = substr($str, 0, -2);
+
         return $this->twig->render('t_model.php.twig', $variables);
     }
 

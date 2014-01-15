@@ -10,6 +10,7 @@
 namespace Lib\Generator;
 
 use Lib\MicroMuffin;
+use Lib\PDOS;
 
 class Generator
 {
@@ -38,17 +39,45 @@ class Generator
         }
     }
 
+    private static function writeLine($str, $color = null)
+    {
+        if ($color == 'green')
+            $str = "\033[0;32m" . $str . "\033[0m";
+        else if ($color == 'red')
+            $str = "\033[41m" . $str . "\033[0m";
+
+        echo $str . "\n";
+    }
+
     public static function run()
     {
         self::init();
+        self::writeLine("micro-muffin v" . LIB_VERSION_NUMBER . " generator");
+        self::writeLine("Emptying t_model directory");
         self::emptyDirectory(__DIR__ . self::RELATIVE_T_MODEL_SAVE_DIR);
+        self::writeLine("Emptying sp_model directory");
         self::emptyDirectory(__DIR__ . self::RELATIVE_SP_MODEL_SAVE_DIR);
 
-        $driver = MicroMuffin::getDBDriver();
-        $schema = $driver->getAbstractSchema();
+        self::writeLine("Connecting to " . DBNAME . " on " . DBHOST . "...");
+        try
+        {
+            $pdo    = PDOS::getInstance();
+            $driver = MicroMuffin::getDBDriver();
+            self::writeLine("Success !", 'green');
+            self::writeLine("Retrieving database " . DBSCHEMA . " schema...");
+            $schema = $driver->getAbstractSchema();
+            self::writeLine(count($schema->getTables()) . " tables founds");
 
-        //var_dump($schema);
-
-        $schema->writeFiles();
+            self::writeLine("Writing models...");
+            $schema->writeFiles();
+            self::writeLine("Done !");
+            self::writeLine("Enjoy ! ;)");
+        }
+        catch (\Exception $e)
+        {
+            self::writeLine("Error ! Connection to database failed.", 'red');
+            self::writeLine("Error returned : " . $e->getMessage(), 'red');
+            die();
+        }
     }
 }

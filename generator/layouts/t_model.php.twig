@@ -1,18 +1,10 @@
 <?php
 abstract class {{ tClassName }} extends \Lib\Models\Deletable
 {
-  protected static $table_name    = '{{ tableName }}';
-  protected static $primary_keys  = array({{ primaryKey }});
-  protected static $_fields       = array({{ field_list }});
-
-  protected function fillSequencedAttributes(\Lib\EPO $pdo)
-  {
-{% for f in fields %}
-{% if f.getSequence is not null %}
-    $this->set{{ f.getName | capitalize }}($pdo->lastInsertId('{{ f.getSequence }}'));
-{% endif %}
-{% endfor %}
-  }
+  protected static $_table_name    = '{{ tableName }}';
+  protected static $_primary_keys  = array({{ primaryKey }});
+  protected static $_fields        = array({{ field_list }});
+  protected static $_sequences     = array({{ sequencesArray }});
 
 {% for f in fields %}
   protected $_{{ f.getName }} = {{ f.defaultValueToString }};

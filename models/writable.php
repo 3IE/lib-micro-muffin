@@ -17,24 +17,24 @@ use Lib\Tools;
 abstract class Writable extends Readable
 {
     /** @var bool */
-    private $_modified = true;
+    private $_MM_modified = true;
     /** @var bool */
-    protected $_notInserted = true;
+    protected $_MM_notInserted = true;
 
     protected function _objectEdited()
     {
-        $this->_modified = true;
+        $this->_MM_modified = true;
     }
 
     private function _objectNotEdited()
     {
-        $this->_modified    = false;
-        $this->_notInserted = false;
+        $this->_MM_modified    = false;
+        $this->_MM_notInserted = false;
     }
 
-    public function getModified()
+    public function getMMModified()
     {
-        return $this->_modified;
+        return $this->_MM_modified;
     }
 
     /**
@@ -44,11 +44,11 @@ abstract class Writable extends Readable
      */
     public function save()
     {
-        if ($this->_modified)
+        if ($this->_MM_modified)
         {
             $reflection = new \ReflectionClass($this);
             $class      = $reflection->getShortName();
-            $table      = self::$table_name != null ? self::$table_name : strtolower($class) . 's';
+            $table      = self::$_table_name != null ? self::$_table_name : strtolower($class) . 's';
 
             $attributes = $this->getAttributes($reflection);
 
@@ -72,7 +72,7 @@ abstract class Writable extends Readable
 
             $pdo = PDOS::getInstance();
 
-            if ($this->_notInserted)
+            if ($this->_MM_notInserted)
                 $this->add($pdo, $table, $fields, $values, $attributes);
             else
                 $this->update();
@@ -81,16 +81,16 @@ abstract class Writable extends Readable
 
     private function update()
     {
-        $sql        = 'UPDATE ' . static::$table_name . ' SET ';
+        $sql        = 'UPDATE ' . static::$_table_name . ' SET ';
         $set        = '';
         $where      = '';
         $attributes = $this->getAttributes(new \ReflectionClass($this));
 
         foreach ($attributes as $k => $v)
-            if (!in_array($k, static::$primary_keys))
+            if (!in_array($k, static::$_primary_keys))
                 $set .= $k . ' = :' . $k . ', ';
 
-        foreach (static::$primary_keys as $pk)
+        foreach (static::$_primary_keys as $pk)
             $where .= $pk . ' = :' . $pk . ' AND ';
 
         $where = substr($where, 0, -5);
@@ -234,32 +234,51 @@ abstract class Writable extends Readable
         $pdo->commit();
     }
 
-    /**
-     * @param \Lib\EPO $pdo
-     * @param          $table
-     * @param string   $fields
-     * @param string   $values
-     * @param array    $attributes
-     */
-    private function add(EPO $pdo, $table, $fields, $values, Array $attributes)
+    private function add()
     {
-        $query = 'INSERT INTO ' . $table . ' ' . $fields . ' VALUES ' . $values;
+        $aAttributes = $this->getAttributes(new \ReflectionClass($this));
 
-        $query = $pdo->prepare($query);
-        foreach ($attributes as $k => $v)
+        //Detection of attributes to insert : non sequence holder and sequence holder that are null
+        $aAttributesToInsert  = array();
+        $aSequencedAttributes = array();
+        foreach ($aAttributes as $att => $val)
         {
-            if ($k != 'id' || $v != 0)
-            {
-                if (is_bool($v))
-                    $query->bindValue(':' . $k, $v, \PDO::PARAM_BOOL);
-                else
-                    $query->bindValue(':' . $k, $v);
-            }
+            if (!array_key_exists($att, static::$_sequences) || !is_null($aAttributes[$att]))
+                $aAttributesToInsert[$att] = $val;
+            else
+                $aSequencedAttributes[] = $att;
         }
-        $query->execute();
-        $this->fillSequencedAttributes($pdo);
-        $this->_notInserted = false;
-    }
 
-    protected abstract function fillSequencedAttributes(EPO $pdo);
+        //Request building
+        $sFields       = '';
+        $sPlaceholders = '';
+
+        foreach ($aAttributesToInsert as $att => $val)
+        {
+            $sFields .= $att . ', ';
+            $sPlaceholders .= ':' . $att . ', ';
+        }
+        $sFields = substr($sFields, 0, -2);
+        $sPlaceholders = substr($sPlaceholders, 0, -2);
+
+        $pdo    = PDOS::getInstance();
+        $driver = MicroMuffin::getDBDriver();
+        $query  = $pdo->prepare('INSERT INTO ' . static::getTableName() . ' (' . $sFields . ') VALUES(' . $sPlaceholders . ')');
+
+        foreach ($aAttributesToInsert as $att => $val)
+        {
+            $driver::bindPDOValue($query, ':' . $att, $val);
+        }
+
+        $query->execute();
+
+        //Retrieving sequence values for concerned attributes
+        foreach ($aSequencedAttributes as $att)
+        {
+            $attributeName        = '_' . $att;
+            $this->$attributeName = $pdo->lastInsertId(static::$_sequences[$att]);
+        }
+
+        $this->_MM_notInserted = false;
+    }
 }

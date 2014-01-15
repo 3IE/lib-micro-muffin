@@ -10,18 +10,20 @@ namespace Lib\Models;
 abstract class Model
 {
   /** @var string|null */
-  protected static $table_name = null;
+  protected static $_table_name = null;
   /** @var array */
   protected static $_fields = array();
   /** @var array */
-  protected static $primary_keys = array();
+  protected static $_primary_keys = array();
+  /** @var array */
+  protected static $_sequences = array();
 
   /**
    * @return string
    */
   public static function getTableName()
   {
-    return static::$table_name;
+    return static::$_table_name;
   }
 
   /**
@@ -74,7 +76,7 @@ abstract class Model
       if (!$att->isPrivate() && !$att->isStatic())
       {
         $object = $att->getValue($this);
-        if ($object instanceof Writable && $object->getModified())
+        if ($object instanceof Writable && $object->getMMModified())
           $attributes[] = $object;
       }
       $att->setAccessible(false);

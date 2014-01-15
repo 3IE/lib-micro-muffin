@@ -18,13 +18,13 @@ abstract class Readable extends Model
   const WHERE_MODE_OR  = 2;
 
   /** @var string|null */
-  protected static $procstock_find = null;
+  protected static $_procstock_find = null;
   /** @var string|null */
-  protected static $procstock_all = null;
+  protected static $_procstock_all = null;
   /** @var string|null */
-  protected static $procstock_count = null;
+  protected static $_procstock_count = null;
   /** @var string|null */
-  protected static $procstock_take = null;
+  protected static $_procstock_take = null;
 
   /**
    * Find all models in database
@@ -35,7 +35,7 @@ abstract class Readable extends Model
   public static function all($order = null)
   {
     $class = strtolower(get_called_class());
-    $proc  = self::$procstock_all != null ? self::$procstock_all : $class . 's';
+    $proc  = self::$_procstock_all != null ? self::$_procstock_all : $class . 's';
     $pdo   = PDOS::getInstance();
 
     $order = self::handleOrder($order);
@@ -109,7 +109,7 @@ abstract class Readable extends Model
   public static function where($where_clause, $order = null, $where_mode = self::WHERE_MODE_AND)
   {
     $class = strtolower(get_called_class());
-    $proc  = static::$procstock_all != null ? static::$procstock_all : 'getall' . $class . 's';
+    $proc  = static::$_procstock_all != null ? static::$_procstock_all : 'getall' . $class . 's';
     $pdo   = PDOS::getInstance();
 
     $sWhereClause = '';
@@ -188,7 +188,7 @@ abstract class Readable extends Model
   public static function count()
   {
     $class = strtolower(get_called_class());
-    $proc  = self::$procstock_count != null ? self::$procstock_count : 'count' . $class . 's';
+    $proc  = self::$_procstock_count != null ? self::$_procstock_count : 'count' . $class . 's';
     $pdo   = PDOS::getInstance();
 
     $query = $pdo->prepare('SELECT * FROM ' . $proc . '()');
@@ -208,7 +208,7 @@ abstract class Readable extends Model
   public static function take($number, $offset = 0, $order = null)
   {
     $class = strtolower(get_called_class());
-    $proc  = self::$procstock_take != null ? self::$procstock_count : 'take' . $class . 's';
+    $proc  = self::$_procstock_take != null ? self::$_procstock_count : 'take' . $class . 's';
     $pdo   = PDOS::getInstance();
 
     $order = self::handleOrder($order);

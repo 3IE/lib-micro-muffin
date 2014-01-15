@@ -20,7 +20,7 @@ abstract class Deletable extends Writable
   public function delete()
   {
     $class = strtolower(get_called_class());
-    $table = self::$table_name != null ? self::$table_name : $class . 's';
+    $table = self::$_table_name != null ? self::$_table_name : $class . 's';
 
     $pdo = PDOS::getInstance();
 

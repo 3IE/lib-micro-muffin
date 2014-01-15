@@ -1027,8 +1027,17 @@ class Generator
 
   public static function run()
   {
-    $generator = new Generator();
-    $generator->init();
-    $generator->execute();
+//    $generator = new Generator();
+//    $generator->init();
+//    $generator->execute();
+      require_once(__DIR__ . '/autoloader.php');
+      require_once(__DIR__ . '/generator/DriverType.php');
+      require_once(__DIR__ . '/config.php');
+      require_once(__DIR__ . '/MicroMuffin.php');
+      require_once(__DIR__ . '/pdos.php');
+      require_once(__DIR__ . '/epo.php');
+      require_once(__DIR__ . '/../' . CONFIG_DIR . '/config.php');
+      require_once(__DIR__ . '/generator/Generator.php');
+      \Lib\Generator\Generator::run();
   }
 }
