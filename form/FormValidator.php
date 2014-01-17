@@ -70,4 +70,10 @@ class FormValidator
   {
     return $this->messages;
   }
+
+    public static function isValidMail($mail)
+    {
+        $b = filter_var($mail, FILTER_VALIDATE_EMAIL);
+        return !is_bool($b) || $b !== false;
+    }
 }
