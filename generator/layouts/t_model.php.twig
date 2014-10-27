@@ -74,9 +74,12 @@ abstract class {{ tClassName }} extends \Lib\Models\Deletable
     {
       $pdo = \Lib\PDOS::getInstance();
       if (!is_null($order))
-        $query = $pdo->prepare('SELECT * FROM {{ otm.getProcedureName }}(' . $this->_{{ otm.getField }} . ') ORDER BY ' . $order);
+        $query = $pdo->prepare('SELECT * FROM {{ otm.getProcedureName }}(:id) ORDER BY ' . $order);
       else
-        $query = $pdo->prepare('SELECT * FROM {{ otm.getProcedureName }}(' . $this->_{{ otm.getField }} . ')');
+        $query = $pdo->prepare('SELECT * FROM {{ otm.getProcedureName }}(:id)');
+
+      $driver = \Lib\MicroMuffin::getDBDriver();
+      $driver->bindPDOValue($query, ':id', $this->_{{ otm.getField }});
       $query->execute();
 
       $results  = $query->fetchAll();
