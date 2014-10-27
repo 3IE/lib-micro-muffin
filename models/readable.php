@@ -228,8 +228,8 @@ abstract class Readable extends Model
     $order = self::handleOrder($order);
 
     $query = $pdo->prepare('SELECT * FROM ' . $proc . '(:start, :number, :order)');
-    $query->bindValue(':start', $offset);
-    $query->bindValue(':number', $number);
+    $query->bindValue(':start', $offset, \PDO::PARAM_INT);
+    $query->bindValue(':number', $number, \PDO::PARAM_INT);
     $query->bindValue(':order', is_null($order) ? 'null' : $order);
     $query->execute();
 
