@@ -27,18 +27,16 @@ define('LIBROUTER_DIR', BASE_DIR . LIB_DIR . '/router/');
 define('LIBGENERATOR_DIR', BASE_DIR . LIB_DIR . '/generator/');
 define('CONTENT_DIR', BASE_DIR . 'public/content/');
 
-if (!defined('NOAUTOLOAD') || !NOAUTOLOAD) {
-  Autoloader::addPath(CONTROLLER_DIR);
-  Autoloader::addPath(VIEW_DIR);
-  Autoloader::addPath(MODEL_DIR);
-  Autoloader::addPath(TMODEL_DIR);
-  Autoloader::addPath(SPMODEL_DIR);
-  Autoloader::addPath(CONFIG_DIR);
-  Autoloader::addPath(VENDORS_DIR);
-  Autoloader::addPath(LIB_DIR);
-  Autoloader::addPath(LIBMODEL_DIR);
-  Autoloader::addPath(LIBFORM_DIR);
-  Autoloader::addPath(DICO_DIR);
-  Autoloader::addPath(LIBROUTER_DIR);
-  Autoloader::addPath(LIBGENERATOR_DIR);
-}
+Autoloader::addPath(CONTROLLER_DIR);
+Autoloader::addPath(VIEW_DIR);
+Autoloader::addPath(MODEL_DIR);
+Autoloader::addPath(TMODEL_DIR);
+Autoloader::addPath(SPMODEL_DIR);
+Autoloader::addPath(CONFIG_DIR);
+Autoloader::addPath(VENDORS_DIR);
+Autoloader::addPath(LIB_DIR);
+Autoloader::addPath(LIBMODEL_DIR);
+Autoloader::addPath(LIBFORM_DIR);
+Autoloader::addPath(DICO_DIR);
+Autoloader::addPath(LIBROUTER_DIR);
+Autoloader::addPath(LIBGENERATOR_DIR);

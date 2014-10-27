@@ -34,12 +34,12 @@ class MicroMuffin
   /** @var string */
   private $action;
 
-  private static function init()
+  public static function init()
   {
-    require_once('autoloader.php');
-    require_once('generator/DriverType.php');
-    require_once('../config/config.php');
-    require_once('config.php');
+    require_once(__DIR__ . '/autoloader.php');
+    require_once(__DIR__ . '/generator/DriverType.php');
+    require_once(__DIR__ . '/../config/config.php');
+    require_once(__DIR__ . '/config.php');
 
     /*
      * WARNING ! Do not call Autoloader::register before the three includes before
