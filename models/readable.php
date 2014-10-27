@@ -128,7 +128,7 @@ abstract class Readable extends Model
 
           if (in_array($column, static::$_fields))
           {
-            $valid_operators = array('=', '>', '<', '>=', '<=', '<>', 'IS', 'IS NOT', 'LIKE');
+            $valid_operators = array('=', '>', '<', '>=', '<=', '<>', 'IS', 'IS NOT', 'LIKE', 'IN');
             if (in_array($operator, $valid_operators))
             {
               if (is_bool($value))
@@ -140,6 +140,20 @@ abstract class Readable extends Model
               }
               else if (is_null($value))
                 $value = 'NULL';
+              else if (is_array($value) && $operator == 'IN')
+              {
+                  array_map(function ($item) {
+                      if (!is_int($item))
+                          throw new \Exception('Readeable::where : all items on IN array must be integers');
+                  }, $value);
+
+                  $sInClause = '(';
+                  foreach ($value as $item)
+                  {
+                      $sInClause .= $item . ',';
+                  }
+                  $value = substr($sInClause, 0, -1) . ')';
+              }
 
               $sWhereClause .= $column . ' ' . $operator . ' ' . $value . ' ' . $sSeparator . ' ';
             }

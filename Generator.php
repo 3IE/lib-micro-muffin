@@ -105,7 +105,12 @@ class Generator
   {
     $stringType = array(
       'character varying',
-      'text'
+      'text',
+      'date',
+      'timestamp with timezone',
+      'timestamp without timezone',
+      'time with timezone',
+      'time without timezone'
     );
 
     return in_array($var, $stringType);
