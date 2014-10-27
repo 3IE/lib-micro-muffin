@@ -47,33 +47,14 @@ abstract class Writable extends Readable
         if ($this->_MM_modified)
         {
             $reflection = new \ReflectionClass($this);
-            $class      = $reflection->getShortName();
-            $table      = self::$_table_name != null ? self::$_table_name : strtolower($class) . 's';
-
-            $attributes = $this->getAttributes($reflection);
 
             //Joints model saving
             $modelAttributes = $this->getModelAttributes($reflection);
             foreach ($modelAttributes as $model)
                 $model->save();
 
-            $fields = '(';
-            $values = '(';
-            foreach ($attributes as $k => $v)
-            {
-                if ($k != 'id' || $v != 0)
-                {
-                    $fields .= $k . ', ';
-                    $values .= ':' . $k . ', ';
-                }
-            }
-            $fields = substr($fields, 0, -2) . ')';
-            $values = substr($values, 0, -2) . ')';
-
-            $pdo = PDOS::getInstance();
-
             if ($this->_MM_notInserted)
-                $this->add($pdo, $table, $fields, $values, $attributes);
+                $this->add();
             else
                 $this->update();
         }
