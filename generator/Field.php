@@ -46,12 +46,21 @@ class Field
      */
     public function defaultValuetoString()
     {
-        if (is_null($this->defaultValue))
+        return $this->convertDefaultValueToString($this->defaultValue);
+    }
+
+    private function convertDefaultValueToString($str)
+    {
+        if (is_null($str) || $str == 'null')
             return 'null';
-        else if (is_string($this->defaultValue))
-            return "'$this->defaultValue'";
+        else if ($str == 'false' | $str == 'true')
+            return $str;
+        else if (is_string($str) && ($this->type != 'integer' && $this->type != 'real'))
+        {
+            return "'" . $str . "'";
+        }
         else
-            return $this->defaultValue;
+            return $str;
     }
 
     /**
@@ -75,7 +84,7 @@ class Field
      */
     public function setDefaultValue($defaultValue)
     {
-        $this->defaultValue = $defaultValue;
+        $this->defaultValue = $this->convertDefaultValueToString($defaultValue);
     }
 
     /**
